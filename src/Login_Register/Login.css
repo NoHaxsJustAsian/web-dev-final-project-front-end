@@ -1,0 +1,32 @@
+/* AuthScreen.css */
+.Container {
+    flex: 1;
+    padding-top: 28px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.Header {
+    font-family: 'Sans-serif';
+    font-weight: bold;
+}
+
+.SwitchLoginCreateGroup {
+    font-family: 'Sans-serif';
+}
+
+.ShowButton i {
+    font-size: 1rem; /* Adjust icon size as needed */
+}
+
+.formBasicEmail, .formBasicPassword {
+    margin-bottom: 15px;
+}
+
+.bg-danger {
+    background-color: #dc3545; /* Bootstrap danger color */
+}
+
+.object-cover {
+    object-fit: cover;
+}
