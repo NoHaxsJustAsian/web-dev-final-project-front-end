@@ -1,60 +1,118 @@
+// ProfileManagement.tsx
 import React, { useState, useEffect } from 'react';
-import { useParams , Link} from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-
+// Types
 type Profile = {
     name: string;
     bio: string;
     email: string;
 };
 
+type ProfileFieldProps = {
+    label: string;
+    value: string;
+    editing: boolean;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+    inputType?: string;
+};
+
+type EditProfileFormProps = {
+    profile: Profile;
+    onCancel: () => void;
+    onSave: (data: Profile) => void;
+};
+
 type UserInfoProps = {
-    profile: Profile | null;
-    isOwnProfile: boolean;
+    profile: Profile;
+    onEdit: () => void;
 };
 
-const mockData = {
-    profile: {
-        name: 'John Doe',
-        bio: 'Software Engineer at XYZ',
-        email: 'johndoe@example.com'
-    },
-    isOwnProfile: true
+// ProfileField Component
+const ProfileField: React.FC<ProfileFieldProps> = ({
+    label,
+    value,
+    editing,
+    onChange,
+    inputType = 'text'
+}) => {
+    return (
+        <div className="grid grid-cols-1 gap-1 p-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
+            <dt className="font-medium text-gray-900">{label}</dt>
+            <dd className="text-gray-700 sm:col-span-2">
+                {editing ? (
+                    inputType === 'textarea' ? (
+                        <textarea
+                            value={value}
+                            onChange={onChange}
+                            className="form-input w-full rounded-md"
+                            rows={3}
+                        />
+                    ) : (
+                        <input
+                            type={inputType}
+                            value={value}
+                            onChange={onChange}
+                            className="form-input w-full rounded-md"
+                        />
+                    )
+                ) : (
+                    value
+                )}
+            </dd>
+        </div>
+    );
 };
 
+// EditProfileForm Component
+const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, onSave }) => {
+    const [formData, setFormData] = useState<Profile>(profile);
 
+    const handleInputChange = (field: keyof Profile) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [field]: event.target.value });
+    };
 
-const UserInfo: React.FC<UserInfoProps> = ({ profile, isOwnProfile }) => (
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        onSave(formData);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
+            <ProfileField label="Name" value={formData.name} editing={true} onChange={handleInputChange('name')} />
+            <ProfileField label="Bio" value={formData.bio} editing={true} onChange={handleInputChange('bio')} inputType="textarea" />
+            <ProfileField label="Email" value={formData.email} editing={true} onChange={handleInputChange('email')} inputType="email" />
+            <div className="flex justify-end p-3">
+                <button type="button" onClick={onCancel} className="btn mr-2">Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    );
+};
+
+// UserInfo Component
+const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
     <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
-        <dl className="-my-3 divide-y divide-gray-100 text-sm">
-            <div className="grid grid-cols-1 gap-1 p-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
-                <dt className="font-medium text-gray-900">Name</dt>
-                <dd className="text-gray-700 sm:col-span-2">{profile?.name}</dd>
-            </div>
-            <div className="grid grid-cols-1 gap-1 p-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
-                <dt className="font-medium text-gray-900">Bio</dt>
-                <dd className="text-gray-700 sm:col-span-2">{profile?.bio}</dd>
-            </div>
-            {isOwnProfile && (
-                <div className="grid grid-cols-1 gap-1 p-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
-                    <dt className="font-medium text-gray-900">Email</dt>
-                    <dd className="text-gray-700 sm:col-span-2">{profile?.email}</dd>
-                </div>
-            )}
-        </dl>
+        <ProfileField label="Name" value={profile.name} editing={false} />
+        <ProfileField label="Bio" value={profile.bio} editing={false} />
+        <ProfileField label="Email" value={profile.email} editing={false} />
+        <div className="flex justify-end p-3">
+            <button onClick={onEdit} className="btn btn-primary">Edit</button>
+        </div>
     </div>
 );
 
-const ProfilePage = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
-    const { profileId } = useParams(); // Get profile ID from URL
-    const [profile, setProfile] = useState(null);
-    const isOwnProfile = !profileId; // Determine if viewing own profile
+// ProfilePage Component
+const ProfilePage: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
+    const { profileId } = useParams<string>();
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [editing, setEditing] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await axios.get(`/api/profile/${profileId || 'me'}`);
+                const response = await axios.get<Profile>(`/api/profile/${profileId || 'me'}`);
                 setProfile(response.data);
             } catch (error) {
                 console.error('Error fetching profile:', error);
@@ -63,9 +121,23 @@ const ProfilePage = ({ isLoggedIn }: { isLoggedIn: boolean }) => {
         fetchProfile();
     }, [profileId]);
 
+    const handleSave = (updatedProfile: Profile) => {
+        axios.put(`/api/profile/${profileId || 'me'}`, updatedProfile)
+            .then((response) => {
+                setProfile(response.data);
+                setEditing(false);
+            })
+            .catch((error) => console.error('Error updating profile:', error));
+    };
+
     return (
         <div>
-            <UserInfo profile={profile} isOwnProfile={isOwnProfile} />
+            <h1 className="text-2xl font-semibold text-gray-900 p-4">Profile</h1>
+            {profile && (editing ? (
+                <EditProfileForm profile={profile} onCancel={() => setEditing(false)} onSave={handleSave} />
+            ) : (
+                <UserInfo profile={profile} onEdit={() => setEditing(true)} />
+            ))}
         </div>
     );
 };
