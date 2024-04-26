@@ -163,7 +163,7 @@ function Details() {
 
             if (error) throw error;
             console.log('Post deleted:', data);
-            navigate('/dashboard'); 
+            navigate('/'); 
           } catch (error) {
             console.log('Error deleting post:', error);
           } finally {
@@ -302,7 +302,7 @@ function Details() {
 
 
       const goBackToDashboard = () => {
-        navigate('/dashboard');
+        navigate('/');
     };
 
       const commonButtonStyle = "inline-flex items-center justify-center gap-2 rounded-full border border-rose-600 px-5 py-3 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-600 hover:text-white";

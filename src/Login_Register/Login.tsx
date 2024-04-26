@@ -86,7 +86,7 @@ const uploadFile = async (file: File) => {
       });
 
       if (error) setError(error.message);
-      else nav("/dashboard");
+      else nav("/");
     }
     setLoading(false);
   };
@@ -117,7 +117,7 @@ const uploadFile = async (file: File) => {
     } else {
       console.log("Profile created successfully:", data);
     }
-    nav("/dashboard");
+    nav("/");
   }
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
