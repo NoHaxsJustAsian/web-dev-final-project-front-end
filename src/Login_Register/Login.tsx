@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import supabase from "../supabaseClient";
-import { render } from "@testing-library/react";
 
 function AuthScreen() {
   const nav = useNavigate();
@@ -164,14 +163,6 @@ function AuthScreen() {
           <div className="max-w-xl lg:max-w-3xl">
             <div>
               <img src="/logo-black-horizontal-crop.png" alt="Logo" />
-              <form
-                onSubmit={onSubmit}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
                 <form
                   onSubmit={onSubmit}
                   style={{
@@ -188,7 +179,6 @@ function AuthScreen() {
                     {formMode === "login" ? "Login" : "Create an account"}
                   </button>
                 </form>
-              </form>
               {error && <p className="text-red-500">{error}</p>}
               <button
                 style={{
