@@ -1,0 +1,47 @@
+
+
+.review-section {
+    margin-top: 20px;
+    border-top: 2px solid #000; /* Top border line as per the design */
+}
+
+.review-tabs {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    border-bottom: 1px solid #ccc; /* Bottom border line for tabs */
+}
+
+.tab-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #f8f8f8;
+    border: 1px solid #ccc;
+    border-bottom: none; /* Remove bottom border to blend with the content box */
+    margin-right: 5px; /* Spacing between tabs */
+}
+
+.tab-item:hover {
+    background-color: #e8e8e8;
+}
+
+/* Active tab item style */
+.tab-item.active {
+    background-color: #fff;
+    font-weight: bold;
+}
+
+.review-content {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-top: none; /* Remove top border to blend with the tabs */
+}
+
+.tab-panel {
+    display: none; /* Hide all tab panels by default */
+}
+
+.tab-panel.active {
+    display: block; /* Show active tab panel */
+}
