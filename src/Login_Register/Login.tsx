@@ -9,6 +9,7 @@ function AuthScreen() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,7 +37,7 @@ function AuthScreen() {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          createProfile(user.id, firstName, lastName, userRole, email);
+          createProfile(user.id, firstName, lastName, userRole, email, username);
         } else {
           console.error("No user found");
         }
@@ -58,7 +59,8 @@ function AuthScreen() {
     firstName: string,
     lastName: string,
     role: string,
-    email: string
+    email: string,
+    username: string
   ) {
     const { data, error } = await supabase.from("users").insert([
       {
@@ -67,6 +69,7 @@ function AuthScreen() {
         last_name: lastName,
         role: role,
         email: email,
+        username: username
       },
     ]);
 
@@ -120,6 +123,13 @@ function AuthScreen() {
         className="mt-1 w-full rounded-md border-gray-200 bg-white text-ml p-3 text-gray-700 shadow-sm"
         value={lastName}
         onChange={(e) => setLastName(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="Username"
+        className="mt-1 w-full rounded-md border-gray-200 bg-white text-ml p-3 text-gray-700 shadow-sm"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
       />
       <select
         value={userRole}

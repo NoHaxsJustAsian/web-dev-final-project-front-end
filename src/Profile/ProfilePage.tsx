@@ -7,6 +7,7 @@ type Profile = {
     first_name: string;
     last_name: string;
     email: string;
+    username: string;
 };
 
 type ProfileFieldProps = {
@@ -72,6 +73,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, on
         <form onSubmit={handleSubmit} className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
             <ProfileField label="First Name" value={formData.first_name} editing={true} onChange={handleInputChange('first_name')} />
             <ProfileField label="Last Name" value={formData.last_name} editing={true} onChange={handleInputChange('last_name')} />
+            <ProfileField label="Username" value={formData.username} editing={true} onChange={handleInputChange('username')} />
             <ProfileField label="Email" value={formData.email} editing={true} onChange={handleInputChange('email')} inputType="email" />
             <div className="flex justify-end p-3">
                 <button type="button" onClick={onCancel} className="btn mr-2">Cancel</button>
@@ -86,6 +88,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
     <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
         <ProfileField label="First Name" value={profile.first_name} editing={false} />
         <ProfileField label="Last Name" value={profile.last_name} editing={false} />
+        <ProfileField label="Username" value={profile.username} editing={false} />
         <ProfileField label="Email" value={profile.email} editing={false} />
         <div className="flex justify-end p-3">
             <button onClick={onEdit} className="btn btn-primary">Edit</button>
@@ -102,7 +105,7 @@ const ProfilePage: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
         const fetchProfile = async () => {
             try {
                 const { data, error } = await supabase
-                    .from('profiles')
+                    .from('users')
                     .select('*')
                     .single();
 
@@ -120,21 +123,22 @@ const ProfilePage: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
 
     const handleSave = async (updatedProfile: Profile) => {
         try {
-            const user = await supabase.auth.getUser();
-            const { data, error } = await supabase
-                .from('profiles')
+            const {
+                data: { user },
+              } = await supabase.auth.getUser();
+              if (user) {
+                const { data, error } = await supabase
+                .from('users')
                 .update(updatedProfile)
-                .match({ id: user });
-
-            if (error) {
-                throw error;
-            }
-
-            setProfile(data);
-            setEditing(false);
+                .match({ id: user.id });
+                setProfile(updatedProfile);
+              } else {
+                console.error("No user found");
+              }      
         } catch (error) {
             console.error('Error updating profile:', error);
         }
+        setEditing(false);
     };
 
     return (
