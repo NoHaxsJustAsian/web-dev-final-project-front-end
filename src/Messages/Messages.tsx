@@ -4,8 +4,7 @@ import { Container, Row, Form, InputGroup, Button, Alert } from 'react-bootstrap
 import { Link } from 'react-router-dom';
 import { Conversation } from '../services/types';
 
-function Messages({ match }:any) {
-    let chatId = match.params.id;
+function Messages(chatId: number) {
     const [conversations, setConversations] = useState<Conversation[]>([])
     const [isSelected, setIsSelected] = useState(false);
     const [selected, setSelected] = useState<Conversation>({
@@ -24,23 +23,32 @@ function Messages({ match }:any) {
         isBuyer: undefined,
         myId: 0
     });
-    const [message, setMessage] = useState<String>("");
+    const [message, setMessage] = useState<string>("");
     const [alert, setAlert] = useState<any>(null);
     const [alertShow, setAlertShow] = useState<any>(false);
 
     useEffect(() => {
-        getUserConversations()
-            .then(res => {
-                setConversations(res);
-            })
-            .catch(err => console.log(err))
+        const fetchConversations = async () => {
+            try {
+                const conversations = await getUserConversations();
+                if (conversations) {
+                    setConversations(conversations);
+                }
+            } catch (err) {
+                console.log('Error fetching conversations');
+            }
+        };
+    
+        fetchConversations();
+    
+        // You may need to ensure that this part runs only after `conversations` is set
         if (isSelected) {
             const selectedConversation = conversations.find(x => x.chats._id === chatId);
             if (selectedConversation) {
                 setSelected(selectedConversation);
             }
         }
-    }, [isSelected, chatId, setSelected])
+    }, [isSelected, chatId, setSelected, conversations]);
 
     function handleMsgSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
