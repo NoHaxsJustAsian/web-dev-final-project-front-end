@@ -24,7 +24,7 @@ type ReviewData = {
 };
 
 function Details() {
-    const [userRole, setUserRole] = useState("seller");
+    const [userRole, setUserRole] = useState("buyer");
     const { postId } = useParams<{ postId: string }>();
     const [post, setPost] = useState<PostData | null>(null);
     const [reviews, setReviews] = useState<ReviewData[] | null>(null);
@@ -33,6 +33,15 @@ function Details() {
     const [error, setError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editPostData, setEditPostData] = useState<PostData | null>(null);
+    const [quantity, setQuantity] = useState(1);
+
+    const incrementQuantity = () => {
+        setQuantity(prevQuantity => prevQuantity + 1);
+      };
+      
+      const decrementQuantity = () => {
+        setQuantity(prevQuantity => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+      };
 
    
     useEffect(() => {
@@ -59,6 +68,10 @@ function Details() {
                     if (reviewError) throw new Error(reviewError.message);
                     setReviews(reviewData);  // Now correctly expects an array
                     console.log("Reviews:", reviewData);
+
+                    
+                    console.log('Image URL:', postData?.image_url);
+                    
                 } catch (err) {
                     console.error('Error fetching profile:', error);
                 } finally {
@@ -118,12 +131,33 @@ function Details() {
           }
         }
       };
-      const renderBuyerActions = () => (
-        <>
-          <button className="btn">Add to Cart</button>
-          <button className="btn">Review Product</button>
-        </>
-      );
+
+      const renderBuyerActions = () => {
+        return (
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="Quantity" className="sr-only">Quantity</label>
+              <div className="flex items-center gap-1">
+                <button type="button" className="size-10 leading-10 text-gray-600 transition hover:opacity-75" onClick={decrementQuantity}>
+                  &minus;
+                </button>
+                <input
+                  type="number"
+                  id="Quantity"
+                  value={quantity}
+                  onChange={e => setQuantity(parseInt(e.target.value))}
+                  className="h-10 w-24 rounded border-gray-200 text-center sm:text-sm"
+                  min="1"
+                />
+                <button type="button" className="size-10 leading-10 text-gray-600 transition hover:opacity-75" onClick={incrementQuantity}>
+                  +
+                </button>
+              </div>
+            </div>
+            <button className="text-right btn">Add to Cart</button>
+          </div>
+        );
+      };
     
       const renderSellerActions = () => {
         return isEditing ? (
@@ -155,7 +189,7 @@ function Details() {
                 />
               </div>
             )}
-      
+                
             <div className="flex-1">
               <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
                 {post ? post.title : 'Product Name'}
@@ -164,24 +198,28 @@ function Details() {
                 {post ? post.description : 'Product Description'}
               </p>
 
-              <div className="actions">
-              {userRole === 'seller' ? renderSellerActions() : renderBuyerActions()}
-             </div>
+              
               <p className="mt-2 text-right text-gray-900">
                 {post ? `₹${parseFloat(post.price).toFixed(2)}` : 'Price'}
               </p>
               <p className="text-right text-sm text-gray-600">
                 Created at: {post ? new Date(post.created_at).toLocaleDateString() : 'Date'}
               </p>
+              <p className="text-right text-sm text-gray-600">
+            Seller: {post ? post.created_by : 'Seller'}
+          </p>
+          <div className="mt-4 flex justify-end items-end space-x-2">
+            {renderBuyerActions()}
+          </div>
+
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate('/home')}
                 className="mt-4 inline-flex items-center justify-center gap-2 rounded-full border border-rose-600 px-5 py-3 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-600 hover:text-white"
               >
                 <span>Back to Products</span>
               </button>
             </div>
           </div>
-      
           <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
             {reviews ? reviews.map(review => (
               <blockquote key={review.id} className="flex h-full flex-col justify-between rounded-lg border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
