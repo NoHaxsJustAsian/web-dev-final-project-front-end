@@ -7,8 +7,7 @@ import Error404 from './commons/Error404';
 // import Header from './commons/Header';
 import ProfilePage from './Profile/ProfilePage';
 import Messages from './Messages/Messages';
-
-
+import Details from "./Details/Details";
 function App() {
    return (
       <>
@@ -29,8 +28,8 @@ function App() {
             {/* <Route path='/messages' element={<Messages/>} />;
             <Route path='/messages/:id' element={<Messages/>} />; */}
             <Route element={<Error404/>} />
+             <Route path="/details/:postId" element={<Details />} />
             </Routes>
-
          </HashRouter>
       </>
    );
