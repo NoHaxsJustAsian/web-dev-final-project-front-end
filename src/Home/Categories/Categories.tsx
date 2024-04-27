@@ -36,7 +36,7 @@ function Categories() {
 
     useEffect(() => {
         const fetchPosts = async () => {
-            setLoading(true);
+        setLoading(true);
             let queryBuilder = supabase
                 .from('posts')
                 .select('*')
@@ -51,10 +51,10 @@ function Categories() {
             if (error) {
                 console.error('Error fetching products:', error);
                 setPosts([]);
-            } else {
+                } else {
                 setPosts(data);
-            }
-            setLoading(false);
+                }
+                setLoading(false);
         };
 
         fetchPosts();
@@ -75,8 +75,8 @@ function Categories() {
             const { data: cartData, error } = await supabase.from('cart').select('*').eq('user_id', userId);
             if (cartData) {
                 setCart(cartData[0].posts);
-                const 
-                setTotalPrice(total);
+                // const 
+                // setTotalPrice(total);
             }
         }
 
