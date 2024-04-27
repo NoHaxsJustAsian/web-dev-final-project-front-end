@@ -24,7 +24,7 @@ type ReviewData = {
 };
 
 function Details() {
-    const [userRole, setUserRole] = useState("buyer");
+    const [userRole, setUserRole] = useState("seller");
     const { postId } = useParams<{ postId: string }>();
     const [post, setPost] = useState<PostData | null>(null);
     const [reviews, setReviews] = useState<ReviewData[] | null>(null);
@@ -132,6 +132,7 @@ function Details() {
         }
       };
 
+      
       const renderBuyerActions = () => {
         return (
           <div className="flex flex-col items-end space-y-4">
@@ -151,10 +152,11 @@ function Details() {
                 +
               </button>
             </div>
-            <button className="btn">Add to Cart</button>
+            <button className={commonButtonStyle}>Add to Cart</button>
           </div>
         );
       };
+
       const renderSellerActions = () => {
         return isEditing ? (
           <div>
@@ -166,26 +168,26 @@ function Details() {
           </div>
         ) : (
           <>
-            <button onClick={() => { setEditPostData(post); setIsEditing(true); }}>Edit</button>
-            <button className="btn btn-danger" onClick={handleDeletePost}>Delete</button>
+            <button className="rounded bg-pink-100 px-3 py-1 text-sm font-medium text-pink-600 transition-colors hover:bg-pink-200"onClick={() => { setEditPostData(post); setIsEditing(true); }}>Edit</button>
+            <button className="rounded bg-pink-100 px-3 py-1 text-sm font-medium text-pink-600 transition-colors hover:bg-pink-200"onClick={handleDeletePost}>Delete</button>
           </>
         );
       };
 
+      const renderActions = () => {
+        return (
+          <>
+            {renderBuyerActions()}
+            {userRole === 'seller' && renderSellerActions()}
+          </>
+        );
+      };
+      const commonButtonStyle = "inline-flex items-center justify-center gap-2 rounded-full border border-rose-600 px-5 py-3 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-600 hover:text-white";
     return (
+        
         <section className="bg-gray-50">
-        <div className="mx-auto max-w-screen-2xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <div className="mx-auto max-w-screen-2xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16 bg-blue-100">
           <div className="md:flex md:items-start md:justify-between md:space-x-8">
-            {post && post.image_url && (
-              <div className="shrink-0">
-                <img
-                  className="h-64 w-64 object-cover rounded-md transition duration-300 ease-in-out transform group-hover:scale-110"
-                  src={post.image_url}
-                  alt={post.title}
-                />
-              </div>
-            )}
-                
             <div className="flex-1">
               <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
                 {post ? post.title : 'Product Name'}
@@ -193,8 +195,15 @@ function Details() {
               <p className="mt-4 text-gray-700 leading-relaxed">
                 {post ? post.description : 'Product Description'}
               </p>
+              <div className="shrink-0">
+                <img
+                  className="h-64 w-64 object-cover rounded-md transition duration-300 ease-in-out transform group-hover:scale-110"
+                  src={post.image_url}
+                  alt={post.title}
+                />
+              </div>
+              {renderActions()}
 
-              
               <p className="mt-2 text-right text-gray-900">
                 {post ? `₹${parseFloat(post.price).toFixed(2)}` : 'Price'}
               </p>
@@ -205,15 +214,15 @@ function Details() {
             Seller: {post ? post.created_by : 'Seller'}
           </p>
           <div className="mt-4 flex justify-end items-end space-x-2">
-            {renderBuyerActions()}
+        
           </div>
 
-              <button
-                onClick={() => navigate('/home')}
-                className="mt-4 inline-flex items-center justify-center gap-2 rounded-full border border-rose-600 px-5 py-3 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-600 hover:text-white"
-              >
-                <span>Back to Products</span>
-              </button>
+                    <button
+            onClick={() => navigate('/home')}
+            className={commonButtonStyle}
+            >
+            <span>Back to Products</span>
+            </button>
             </div>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
