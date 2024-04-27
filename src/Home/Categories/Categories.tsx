@@ -6,6 +6,7 @@ import { getAll } from '../../services/productData';
 import { Product } from '../../services/types';
 import ProductCard from '../../Product/ProductCard';
 import { match } from 'assert';
+import supabase from '../../supabaseClient';
 
 function Categories() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -14,29 +15,23 @@ function Categories() {
     const [sort, setSort] = useState('oldest');
 
     useEffect(() => {
-        setLoading(true);
-        const allProducts = async () => {
-            try {
-                const res = await getAll(query);
-                
-                } catch (err) {
-            console.log('Error fetching products');
-        }
-    };
-    if (res){
-        setProducts(res);
-        setLoading(false);
-    }
-
-        getAll(query)  
-            .then(res => {
-                setProducts(res);
+        const fetchProducts = async () => {
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .eq('category', query)
+                .order('id', { ascending: false }); 
+    
+            if (error) {
+                console.error('Error fetching products:', error);
                 setLoading(false);
-            })
-            .catch(err => {
-                console.log('Error fetching products:', err);
+            } else {
+                setProducts(data);
                 setLoading(false);
-            });
+            }
+        };
+    
+        fetchProducts();
     }, [query]);
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
