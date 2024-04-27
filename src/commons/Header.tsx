@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import supabase from '../supabaseClient'; // Import supabase client
 import { Navbar, NavDropdown, Nav, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { BsFillPersonFill, BsFillEnvelopeFill, BsFillPlusCircleFill } from 'react-icons/bs';
 import { IoLogOut } from 'react-icons/io5';
 import './Header.css';
 
-
-
+const logoHorizontal = `${process.env.PUBLIC_URL}/logo-black-horizontal-crop.png`;
+const logo = `${process.env.PUBLIC_URL}/logo-black.png`;
 
 function Header() {
 
+    const location = useLocation();
     const [user, setUser] = useState<any>(null);
-
     useEffect(() => {
         const fetchData = async () => {
             const {
@@ -27,6 +27,14 @@ function Header() {
 
         fetchData();
     }, []);
+    
+    if (location.pathname === '/login') {
+        return null;
+    }
+
+    
+
+    
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -36,7 +44,7 @@ function Header() {
         <Navbar collapseOnSelect bg="light" variant="light">
             <div className="container">
                 <Navbar.Brand>
-                    <NavLink className="navbar-brand" to="/">All for you...</NavLink>
+                <NavLink className="navbar-brand" to="/"> <img src={logoHorizontal} alt="Logo" /> </NavLink>
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                 <Navbar.Collapse id="responsive-navbar-nav">
@@ -50,7 +58,7 @@ function Header() {
                                     <BsFillPlusCircleFill />
                                 </OverlayTrigger>
                             </NavLink>
-                            <NavDropdown title={<img id="navImg" src={placeholder} alt="user-avatar"/>} id="collasible-nav-dropdown">
+                            <NavDropdown title={<img id="navImg" src={logo} alt="user-avatar"/>} id="collasible-nav-dropdown">
                                 <NavLink className="dropdown-item" to={`/profile/`}>
                                     <BsFillPersonFill />Profile
                                 </NavLink>
@@ -65,8 +73,7 @@ function Header() {
                         </Nav>
                     ) : (
                         <Nav>
-                            <NavLink className="nav-item" to="/auth/login">Sign In</NavLink>
-                            <NavLink className="nav-item" to="/auth/register">Sign Up</NavLink>
+                            <NavLink className="nav-item" to="/login">Sign In/Sign Up</NavLink>
                         </Nav>
                     )}
                 </Navbar.Collapse>
