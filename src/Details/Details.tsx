@@ -134,31 +134,27 @@ function Details() {
 
       const renderBuyerActions = () => {
         return (
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="Quantity" className="sr-only">Quantity</label>
-              <div className="flex items-center gap-1">
-                <button type="button" className="size-10 leading-10 text-gray-600 transition hover:opacity-75" onClick={decrementQuantity}>
-                  &minus;
-                </button>
-                <input
-                  type="number"
-                  id="Quantity"
-                  value={quantity}
-                  onChange={e => setQuantity(parseInt(e.target.value))}
-                  className="h-10 w-24 rounded border-gray-200 text-center sm:text-sm"
-                  min="1"
-                />
-                <button type="button" className="size-10 leading-10 text-gray-600 transition hover:opacity-75" onClick={incrementQuantity}>
-                  +
-                </button>
-              </div>
+          <div className="flex flex-col items-end space-y-4">
+            <div className="flex items-center gap-1">
+              <button type="button" className="text-gray-600 transition hover:opacity-75" onClick={decrementQuantity}>
+                &minus;
+              </button>
+              <input
+                type="number"
+                id="Quantity"
+                value={quantity}
+                onChange={e => setQuantity(parseInt(e.target.value))}
+                className="h-10 w-24 rounded border-gray-200 text-center sm:text-sm"
+                min="1"
+              />
+              <button type="button" className="text-gray-600 transition hover:opacity-75" onClick={incrementQuantity}>
+                +
+              </button>
             </div>
-            <button className="text-right btn">Add to Cart</button>
+            <button className="btn">Add to Cart</button>
           </div>
         );
       };
-    
       const renderSellerActions = () => {
         return isEditing ? (
           <div>
