@@ -24,12 +24,17 @@ type ReviewData = {
 };
 
 function Details() {
+    const [userRole, setUserRole] = useState("seller");
     const { postId } = useParams<{ postId: string }>();
     const [post, setPost] = useState<PostData | null>(null);
     const [reviews, setReviews] = useState<ReviewData[] | null>(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editPostData, setEditPostData] = useState<PostData | null>(null);
+
+   
     useEffect(() => {
         const fetchDetails = async () => {
             try {
@@ -67,73 +72,130 @@ function Details() {
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
     if (!post) return <div>Post not found.</div>;
+
+
+    const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+        setEditPostData({ ...editPostData, [field]: e.target.value } as PostData);
+      };
+
+      const saveChanges = async () => {
+        if (!editPostData) return;
     
+        try {
+          const { data, error } = await supabase
+            .from('posts')
+            .update({ ...editPostData })
+            .eq('id', postId);
+    
+          if (error) throw error;
+          
+          setPost(editPostData);
+          setIsEditing(false);
+        } catch (error) {
+          console.log('Error updating post:', error);
+        }
+      };
+
+      const handleDeletePost = async () => {
+        if (!postId) return;
+        
+        if (window.confirm('Are you sure you want to delete this post?')) {
+          try {
+            setLoading(true);
+            const { data, error } = await supabase
+              .from('posts')
+              .delete()
+              .eq('id', postId);
+            
+            if (error) throw error;
+      
+            console.log('Post deleted:', data);
+            navigate('/home'); 
+          } catch (error) {
+            console.log('Error deleting post:', error);
+          } finally {
+            setLoading(false);
+          }
+        }
+      };
+      const renderBuyerActions = () => (
+        <>
+          <button className="btn">Add to Cart</button>
+          <button className="btn">Review Product</button>
+        </>
+      );
+    
+      const renderSellerActions = () => {
+        return isEditing ? (
+          <div>
+            <input type="text" value={editPostData?.title} onChange={(e) => handleEditChange(e, 'title')} />
+            <input type="text" value={editPostData?.description} onChange={(e) => handleEditChange(e, 'description')} />
+            <input type="number" value={editPostData?.price} onChange={(e) => handleEditChange(e, 'price')} />
+            <button onClick={saveChanges}>Save Changes</button>
+            <button onClick={() => setIsEditing(false)}>Cancel</button>
+          </div>
+        ) : (
+          <>
+            <button onClick={() => { setEditPostData(post); setIsEditing(true); }}>Edit</button>
+            <button className="btn btn-danger" onClick={handleDeletePost}>Delete</button>
+          </>
+        );
+      };
+
     return (
         <section className="bg-gray-50">
         <div className="mx-auto max-w-screen-2xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-          <div className="md:flex md:items-start md:justify-between">
-            
+          <div className="md:flex md:items-start md:justify-between md:space-x-8">
             {post && post.image_url && (
-              <a href="#" className="group relative block overflow-hidden flex-shrink-0 mr-8">
-                <button
-                  className="absolute end-4 top-4 z-10 rounded-full bg-white p-1.5 text-gray-900 transition hover:text-gray-900/75"
-                >
-                  <span className="sr-only">Wishlist</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    className="h-4 w-4"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                    />
-                  </svg>
-                </button>
+              <div className="shrink-0">
                 <img
-                  className="h-48 w-48 object-cover rounded-md transition duration-500 group-hover:scale-105"
+                  className="h-64 w-64 object-cover rounded-md transition duration-300 ease-in-out transform group-hover:scale-110"
                   src={post.image_url}
                   alt={post.title}
                 />
-              </a>
+              </div>
             )}
       
-            <div className="max-w-xl">
+            <div className="flex-1">
               <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
                 {post ? post.title : 'Product Name'}
               </h2>
-              <p className="mt-6 max-w-lg leading-relaxed text-gray-700">
+              <p className="mt-4 text-gray-700 leading-relaxed">
                 {post ? post.description : 'Product Description'}
               </p>
-              <p className="text-gray-900">
-                Price: {post ? `Rs. ${post.price}` : 'Price'}
+
+              <div className="actions">
+              {userRole === 'seller' ? renderSellerActions() : renderBuyerActions()}
+             </div>
+              <p className="mt-2 text-right text-gray-900">
+                {post ? `₹${parseFloat(post.price).toFixed(2)}` : 'Price'}
               </p>
-              <p className="text-gray-600">
-                Created at: {post ? post.created_at : 'Date'}
+              <p className="text-right text-sm text-gray-600">
+                Created at: {post ? new Date(post.created_at).toLocaleDateString() : 'Date'}
               </p>
               <button
                 onClick={() => navigate(-1)}
-                className="mt-6 inline-flex shrink-0 items-center gap-2 rounded-full border border-rose-600 px-5 py-3 text-rose-600 transition hover:bg-rose-600 hover:text-white md:mt-0"
+                className="mt-4 inline-flex items-center justify-center gap-2 rounded-full border border-rose-600 px-5 py-3 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-600 hover:text-white"
               >
-                <span className="font-medium">Back to Products</span>
+                <span>Back to Products</span>
               </button>
             </div>
           </div>
       
-          {/* Reviews Grid */}
-          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
             {reviews ? reviews.map(review => (
-              <blockquote key={review.id} className="flex h-full flex-col justify-between bg-white p-6 shadow-sm sm:p-8">
+              <blockquote key={review.id} className="flex h-full flex-col justify-between rounded-lg border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
                 <div>
-                  <p className="text-2xl font-bold text-rose-600 sm:text-3xl">{review.title}</p>
-                  <p className="mt-4 leading-relaxed text-gray-700">{review.description}</p>
+                  <p className="text-left text-2xl font-bold text-rose-600">{review.title}</p>
+                  <p className="mt-4 text-left text-gray-700">{review.description}</p>
                 </div>
-                <footer className="mt-4 text-sm font-medium text-gray-700 sm:mt-6">
-                  &mdash; <Link to={`/profile/${review.created_by}`}>{review.created_by}</Link>
+                <footer className="mt-4 text-right">
+                  <button
+                    onClick={() => navigate(`/profile/${review.created_by}`)}
+                    className="rounded bg-pink-100 px-3 py-1 text-sm font-medium text-pink-600 transition-colors hover:bg-pink-200"
+                  >
+                    {review.created_by}
+                  </button>
                 </footer>
               </blockquote>
             )) : (
@@ -141,7 +203,8 @@ function Details() {
             )}
           </div>
         </div>
-      </section>      
+      </section>
+        
       
     );
     
@@ -153,7 +216,6 @@ export default Details;
 //     const { postId } = useParams<{ postId: string }>();
 //     const [post, setPost] = useState<PostData[]>([]);
 
-//     const [userRole, setUserRole] = useState("seller"); // 'buyer' or 'seller'
 //     const [reviews, setReviews] = useState<any[]>([]);
 //     const [loading, setLoading] = useState(true);
 //     const [error, setError] = useState("");
@@ -173,9 +235,7 @@ export default Details;
 //     const handleProfileClick = () => {
 //         navigate('/profile');
 //     };
-//     const handleEditClick = () => {
-//         setDetailsMode('edit');
-//     };
+
 //     const handleCreateClick = () => {
 //         setDetailsMode('create');
 //     };

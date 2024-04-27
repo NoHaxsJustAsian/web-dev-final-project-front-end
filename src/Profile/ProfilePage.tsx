@@ -7,6 +7,7 @@ type Profile = {
     first_name: string;
     last_name: string;
     email: string;
+    username: string;
 };
 
 type ProfileFieldProps = {
@@ -37,7 +38,7 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
     inputType = 'text'
 }) => {
     return (
-        <div className="grid grid-cols-1 gap-1 p-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
+        <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
             <dt className="font-medium text-gray-900">{label}</dt>
             <dd className="text-gray-700 sm:col-span-2">
                 {editing ? (
@@ -45,15 +46,16 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
                         type={inputType}
                         value={value}
                         onChange={onChange}
-                        className="form-input w-full rounded-md"
+                        className="form-input w-full rounded-md border border-gray-300 px-4 py-2"
                     />
                 ) : (
-                    value
+                    <span className="block py-2 text-left">{value}</span>
                 )}
             </dd>
         </div>
     );
 };
+
 
 // EditProfileForm Component
 const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, onSave }) => {
@@ -67,30 +69,40 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, on
         event.preventDefault();
         onSave(formData);
     };
-
     return (
-        <form onSubmit={handleSubmit} className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
-            <ProfileField label="First Name" value={formData.first_name} editing={true} onChange={handleInputChange('first_name')} />
-            <ProfileField label="Last Name" value={formData.last_name} editing={true} onChange={handleInputChange('last_name')} />
-            <ProfileField label="Email" value={formData.email} editing={true} onChange={handleInputChange('email')} inputType="email" />
-            <div className="flex justify-end p-3">
-                <button type="button" onClick={onCancel} className="btn mr-2">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Changes</button>
-            </div>
-        </form>
+        <div className="my-4 rounded-lg border border-gray-100 bg-white p-6 shadow">
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <ProfileField label="First Name" value={formData.first_name} editing={true} onChange={handleInputChange('first_name')} />
+                <ProfileField label="Last Name" value={formData.last_name} editing={true} onChange={handleInputChange('last_name')} />
+                <ProfileField label="Username" value={formData.username} editing={true} onChange={handleInputChange('username')} />
+                <ProfileField label="Email" value={formData.email} editing={true} onChange={handleInputChange('email')} inputType="email" />
+                <div className="flex justify-end space-x-2">
+                    <button type="button" onClick={onCancel} className="rounded bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300">
+                        Cancel
+                    </button>
+                    <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
     );
 };
 
 // UserInfo Component
 const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
-    <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
+    <div className="my-4 rounded-lg border border-gray-100 bg-white p-6 shadow">
         <ProfileField label="First Name" value={profile.first_name} editing={false} />
         <ProfileField label="Last Name" value={profile.last_name} editing={false} />
+        <ProfileField label="Username" value={profile.username} editing={false} />
         <ProfileField label="Email" value={profile.email} editing={false} />
         <div className="flex justify-end p-3">
-            <button onClick={onEdit} className="btn btn-primary">Edit</button>
+            <button onClick={onEdit} className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                Edit
+            </button>
         </div>
     </div>
+
 );
 
 // ProfilePage Component
@@ -102,7 +114,7 @@ const ProfilePage: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
         const fetchProfile = async () => {
             try {
                 const { data, error } = await supabase
-                    .from('profiles')
+                    .from('users')
                     .select('*')
                     .single();
 
@@ -120,21 +132,22 @@ const ProfilePage: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
 
     const handleSave = async (updatedProfile: Profile) => {
         try {
-            const user = await supabase.auth.getUser();
-            const { data, error } = await supabase
-                .from('profiles')
-                .update(updatedProfile)
-                .match({ id: user });
-
-            if (error) {
-                throw error;
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (user) {
+                const { data, error } = await supabase
+                    .from('users')
+                    .update(updatedProfile)
+                    .match({ id: user.id });
+                setProfile(updatedProfile);
+            } else {
+                console.error("No user found");
             }
-
-            setProfile(data);
-            setEditing(false);
         } catch (error) {
             console.error('Error updating profile:', error);
         }
+        setEditing(false);
     };
 
     return (
