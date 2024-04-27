@@ -2,8 +2,8 @@ import { Image } from 'react-bootstrap';
 
 function Error404() {
     return (
-        <div className="container" style={{ textAlign: "center" }}>
-            <Image src="http://store.picbg.net/pubpic/32/E3/c2b456c4b2d532e3.jpg" fluid />
+        <div className="grid h-screen place-content-center bg-white px-4">
+            <h1 className="uppercase tracking-widest text-gray-500">404 | Not Found</h1>
         </div>
     );
 }
