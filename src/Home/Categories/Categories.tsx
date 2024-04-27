@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Col, Dropdown, Spinner } from 'react-bootstrap';
+import { Button, Col, Dropdown, InputGroup, Spinner } from 'react-bootstrap';
 import { BiSortDown, BiSort, BiUpArrowAlt, BiSortUp, BiDownArrowAlt } from 'react-icons/bi';
 import CategoriesNav from './CategoriesNav';
 import { getAll } from '../../services/productData';
@@ -7,7 +7,7 @@ import { Product } from '../../services/types';
 import ProductCard from '../../Product/ProductCard';
 import { match } from 'assert';
 import supabase from '../../supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { Form, useNavigate } from 'react-router-dom';
 
 type PostData = {
     id: number;
@@ -21,40 +21,59 @@ type PostData = {
 };
 
 function Categories() {
-    const [products, setProducts] = useState<PostData[]>([]);
+    const [posts, setPosts] = useState<PostData[]>([]);
     const [query, setQuery] = useState("");
     const [loading, setLoading] = useState(true);
-    const [sort, setSort] = useState('oldest');
     const navigate = useNavigate();
+    const user = supabase.auth.getUser();
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            const { data, error } = await supabase
+        const fetchPosts = async () => {
+            setLoading(true);
+            let queryBuilder = supabase
                 .from('posts')
                 .select('*')
-                .order('created_at', { ascending: false }); 
-    
+                .order('created_at', { ascending: false });
+
+            if (query) {
+                queryBuilder = queryBuilder.ilike('title', `%${query}%`);
+            }
+
+            const { data, error } = await queryBuilder;
+
             if (error) {
                 console.error('Error fetching products:', error);
-                setLoading(false);
+                setPosts([]);
             } else {
-                setProducts(data);
-                setLoading(false);
+                setPosts(data);
             }
+            setLoading(false);
         };
-    
-        fetchProducts();
+
+        fetchPosts();
     }, [query]);
 
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        e.preventDefault();
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(e.target.value);
+    };
+
+    const handleSearch = () => {
+        setQuery(query);
+    };
+
+    const handleReset = () => {
+        setQuery('');
     };
 
     return (
         <>
             <div id="sider">
-                <input className="col-lg-6" type="text" placeholder="Search..." name="search" value={query} onChange={handleSearch} />
+                <InputGroup className="mb-3">
+                <input className="col-lg-6" type="text" placeholder="Search..." name="search" value={query} onChange={handleSearchChange} />
+                    <Button variant="outline-secondary" onClick={handleSearch}>Search</Button>
+                    <Button variant="outline-danger" onClick={handleReset}>Reset</Button>
+                   
+                </InputGroup>
             </div>
             <div className="container">
                 
@@ -75,7 +94,7 @@ function Categories() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {products.map(post => (
+                        {posts.map(post => (
                           <tr key={post.id}>
                             <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">{post.id}</td>
                             <td className="whitespace-nowrap px-4 py-2 text-gray-700">{new Date(post.created_at).toLocaleDateString()}</td>
