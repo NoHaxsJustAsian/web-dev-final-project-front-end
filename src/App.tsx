@@ -22,7 +22,8 @@ function App() {
             <Route path="/login" element = {<Login />}/>
             {/* <Route path="/auth/logout" exact render={LogOut} /> */}
             {/* <Route path='/add-product' element={<CreateSell/>} />; */}
-            <Route path='/profile' element={<ProfilePage isLoggedIn={false}/>} />; //add
+            <Route path="/profile" element={<ProfilePage isLoggedIn={isLoggedIn} />} />
+            <Route path="/profile/:username" element={<UserPage/>} />
             {/* <Route path='/profile/:id' element={<ProfilePage isLoggedIn={false}/>} />; */}
             {/* <Route path='/profile/:id/edit' element={<Edit/>} />; */}
             {/* <Route path='/messages' element={<Messages/>} />;
@@ -33,6 +34,5 @@ function App() {
          </HashRouter>
       </>
    );
-}
 
 export default App;

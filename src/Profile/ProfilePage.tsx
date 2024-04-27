@@ -1,13 +1,13 @@
 // ProfileManagement.tsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import supabase from '../supabaseClient'; // Import Supabase client
 
 // Types
 type Profile = {
-    name: string;
-    bio: string;
+    first_name: string;
+    last_name: string;
     email: string;
+    username: string;
 };
 
 type ProfileFieldProps = {
@@ -42,21 +42,12 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
             <dt className="font-medium text-gray-900">{label}</dt>
             <dd className="text-gray-700 sm:col-span-2">
                 {editing ? (
-                    inputType === 'textarea' ? (
-                        <textarea
-                            value={value}
-                            onChange={onChange}
-                            className="form-input w-full rounded-md"
-                            rows={3}
-                        />
-                    ) : (
-                        <input
-                            type={inputType}
-                            value={value}
-                            onChange={onChange}
-                            className="form-input w-full rounded-md"
-                        />
-                    )
+                    <input
+                        type={inputType}
+                        value={value}
+                        onChange={onChange}
+                        className="form-input w-full rounded-md"
+                    />
                 ) : (
                     value
                 )}
@@ -80,8 +71,9 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, on
 
     return (
         <form onSubmit={handleSubmit} className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
-            <ProfileField label="Name" value={formData.name} editing={true} onChange={handleInputChange('name')} />
-            <ProfileField label="Bio" value={formData.bio} editing={true} onChange={handleInputChange('bio')} inputType="textarea" />
+            <ProfileField label="First Name" value={formData.first_name} editing={true} onChange={handleInputChange('first_name')} />
+            <ProfileField label="Last Name" value={formData.last_name} editing={true} onChange={handleInputChange('last_name')} />
+            <ProfileField label="Username" value={formData.username} editing={true} onChange={handleInputChange('username')} />
             <ProfileField label="Email" value={formData.email} editing={true} onChange={handleInputChange('email')} inputType="email" />
             <div className="flex justify-end p-3">
                 <button type="button" onClick={onCancel} className="btn mr-2">Cancel</button>
@@ -94,8 +86,9 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, on
 // UserInfo Component
 const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
     <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
-        <ProfileField label="Name" value={profile.name} editing={false} />
-        <ProfileField label="Bio" value={profile.bio} editing={false} />
+        <ProfileField label="First Name" value={profile.first_name} editing={false} />
+        <ProfileField label="Last Name" value={profile.last_name} editing={false} />
+        <ProfileField label="Username" value={profile.username} editing={false} />
         <ProfileField label="Email" value={profile.email} editing={false} />
         <div className="flex justify-end p-3">
             <button onClick={onEdit} className="btn btn-primary">Edit</button>
@@ -105,29 +98,47 @@ const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
 
 // ProfilePage Component
 const ProfilePage: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
-    const { profileId } = useParams<string>();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [editing, setEditing] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await axios.get<Profile>(`/api/profile/${profileId || 'me'}`);
-                setProfile(response.data);
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .single();
+
+                if (error) {
+                    throw error;
+                }
+
+                setProfile(data);
             } catch (error) {
                 console.error('Error fetching profile:', error);
             }
         };
         fetchProfile();
-    }, [profileId]);
+    }, []);
 
-    const handleSave = (updatedProfile: Profile) => {
-        axios.put(`/api/profile/${profileId || 'me'}`, updatedProfile)
-            .then((response) => {
-                setProfile(response.data);
-                setEditing(false);
-            })
-            .catch((error) => console.error('Error updating profile:', error));
+    const handleSave = async (updatedProfile: Profile) => {
+        try {
+            const {
+                data: { user },
+              } = await supabase.auth.getUser();
+              if (user) {
+                const { data, error } = await supabase
+                .from('users')
+                .update(updatedProfile)
+                .match({ id: user.id });
+                setProfile(updatedProfile);
+              } else {
+                console.error("No user found");
+              }      
+        } catch (error) {
+            console.error('Error updating profile:', error);
+        }
+        setEditing(false);
     };
 
     return (
