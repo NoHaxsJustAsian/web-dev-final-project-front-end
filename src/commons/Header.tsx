@@ -32,10 +32,6 @@ function Header() {
         return null;
     }
 
-    
-
-    
-
     const handleLogout = async () => {
         await supabase.auth.signOut();
     };
