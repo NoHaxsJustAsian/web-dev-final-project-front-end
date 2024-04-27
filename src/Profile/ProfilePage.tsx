@@ -10,6 +10,9 @@ type Profile = {
     last_name: string;
     email: string;
     username: string;
+    role: string;
+    liked_posts: string[];
+    selling_posts: string[];
 };
 
 type ProfileFieldProps = {
@@ -77,6 +80,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, on
             <ProfileField label="Last Name" value={formData.last_name} editing={true} onChange={handleInputChange('last_name')} />
             <ProfileField label="Username" value={formData.username} editing={true} onChange={handleInputChange('username')} />
             <ProfileField label="Email" value={formData.email} editing={true} onChange={handleInputChange('email')} inputType="email" />
+            <ProfileField label="Role" value={profile.role} editing={false} />
             <div className="flex justify-end p-3">
                 <button type="button" onClick={onCancel} className="btn mr-2">Cancel</button>
                 <button type="submit" className="btn btn-primary">Save Changes</button>
@@ -104,40 +108,53 @@ const ProfilePage: React.FC = () => {
     const [editing, setEditing] = useState(false);
     const [user, setUser] = useState<UserResponse | null>(null);
     const navigate = useNavigate();
-    var userLoggedIn = false;
+    
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const currentUser = await supabase.auth.getUser();
-                setUser(currentUser);
-                userLoggedIn = true;
+                await supabase.auth.getUser()
+                    .then(currentUser => {
+                        setUser(currentUser);
+    
+                        if (!currentUser) {
+                            navigate('/login');
+                        }
+                    });
             } catch (error) {
                 console.error('Error fetching user:', error);
             }   
         };
         fetchUser();
-    }, []);
-
-    
+    }, [navigate]);
 
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('*')
-                    .single();
-
+                const { data: { user }, error } = await supabase.auth.getUser();
+    
                 if (error) {
                     throw error;
                 }
-
-                setProfile(data);
+    
+                if (user) {
+                    const { data, error } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('id', user.id)
+                        .single();
+    
+                    if (error) {
+                        throw error;
+                    }
+    
+                    setProfile(data);
+                }
             } catch (error) {
                 console.error('Error fetching profile:', error);
             }
         };
+    
         fetchProfile();
     }, []);
 
@@ -161,10 +178,6 @@ const ProfilePage: React.FC = () => {
         setEditing(false);
     };
 
-    if (!userLoggedIn) {
-        navigate('/login');
-    }
-    
     return (
         <div>
             <h1 className="text-2xl font-semibold text-gray-900 p-4">Profile</h1>
