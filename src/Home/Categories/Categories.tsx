@@ -7,6 +7,7 @@ import { Product } from '../../services/types';
 import ProductCard from '../../Product/ProductCard';
 import { match } from 'assert';
 import supabase from '../../supabaseClient';
+import { useNavigate } from 'react-router-dom';
 
 type PostData = {
     id: number;
@@ -24,13 +25,14 @@ function Categories() {
     const [query, setQuery] = useState("");
     const [loading, setLoading] = useState(true);
     const [sort, setSort] = useState('oldest');
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProducts = async () => {
             const { data, error } = await supabase
                 .from('posts')
                 .select('*')
-                .order('id', { ascending: false }); 
+                .order('created_at', { ascending: false }); 
     
             if (error) {
                 console.error('Error fetching products:', error);
@@ -82,11 +84,11 @@ function Categories() {
                             <td className="whitespace-nowrap px-4 py-2 text-gray-700">{post.user_id}</td>
                             <td className="whitespace-nowrap px-4 py-2 text-gray-700"><img src={post.img_url} alt={post.title} style={{ width: '50px', height: 'auto' }} /></td>
                             <td className="whitespace-nowrap px-4 py-2 text-gray-700">{post.created_by}</td>
-                            <td className="whitespace-nowrap px-4 py-2 text-gray-700">${post.price}</td>
+                            <td className="whitespace-nowrap px-4 py-2 text-gray-700">₹{post.price}</td>
                             <td className="whitespace-nowrap px-4 py-2">
                               <button
                                 className="inline-block rounded bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700"
-                                onClick={() => alert('Navigate to details')}>
+                                onClick={() => navigate(`/details/${post.id}`)}>
                                 View Details
                               </button>
                             </td>
