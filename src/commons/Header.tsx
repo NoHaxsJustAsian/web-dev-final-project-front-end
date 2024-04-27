@@ -75,7 +75,7 @@ function Header() {
                 <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                 <Navbar.Collapse id="responsive-navbar-nav">
                     <Nav className="mr-auto"></Nav>
-                    {user ? (
+                    {user && role !== 'buyer' ? (
                         <Nav>
                             <NavLink className="nav-item" id="addButton" to="/add-product">
     <OverlayTrigger key="bottom" placement="bottom"
