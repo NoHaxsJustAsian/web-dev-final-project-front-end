@@ -1,167 +1,47 @@
-/* Base styles to reset some browser defaults */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-  
-  body {
-    font-family: 'Arial', sans-serif;
-  }
-  
-  /* Main container style */
-  .container {
-    width: 80%;
-    margin: auto;
-  }
-  
-  /* Header style */
-  .header {
-    background-color: #e0e0e0;
-    padding: 10px 0;
-    text-align: center;
-  }
-  
-  .header .menu {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-  }
-  
-/* Main container for the product section */
-.product-section {
-    display: flex;
-    justify-content: center;
-    padding: 2rem;
-  }
-  
-  /* Container for the image */
-  .image-container {
-    width: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .image-container img {
-    width: 100%;
-    max-width: 600px; /* Adjust based on the size of your images */
-    height: auto;
-  }
-  
-  /* Container for the product details */
-  .product-details {
-    width: 50%;
-    padding-left: 2rem; /* Space between image and details */
-  }
-  
-  .product-name {
-    font-size: 2rem;
-    margin-bottom: .5rem;
-  }
-  
-  /* Container for edit and delete buttons, placed below the product name */
-  .buttons-container {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    gap: 1rem;
-    margin-bottom: 1rem; /* Space above the price */
-  }
-  
-  .edit-button,
-  .delete-button {
-    padding: 0.5rem 1rem;
-    border: 1px solid #333; /* Simple border, adjust as needed */
-    background-color: white;
-    cursor: pointer;
-  }
-  
-  /* Style for the product price */
-  .product-price {
-    font-size: 1.5rem;
-    margin-bottom: 1rem; /* Space below the price before the description */
-  }
-  
-  /* Quantity and Add to Cart button container */
-  .quantity-add-to-cart {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .quantity-selector {
-    display: flex;
-    align-items: center;
-    border: 1px solid #ccc; /* Light border for the quantity selector */
-  }
-  
-  .quantity-selector button {
-    padding: 0.5rem 1rem;
-    background-color: #f8f8f8; /* Slight grey background */
-    border: none;
-    cursor: pointer;
-  }
-  
-  .quantity-selector input {
-    width: 3rem;
-    text-align: center;
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
-  }
-  
-  .add-to-cart-button {
-    padding: 0.75rem 1.5rem;
-    background-color: #0055a5; /* Example button color */
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .product-section {
-      flex-direction: column;
-      align-items: center;
-    }
-  
-    .image-container,
-    .product-details {
-        width: 800px; /* Fixed width, adjust as needed */
-        height: 600px; /* Fixed height, adjust as needed */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #f0f0f0; 
-    }
-  
-    .product-details {
-      padding-left: 0;
-      padding-top: 2rem;
-    }
-  }
-  
-  /* Footer styles */
-  .footer {
-    background-color: #333;
-    color: white;
-    padding: 20px 0;
-    text-align: center;
-  }
-  
-  /* Responsive design */
-  @media (max-width: 768px) {
-    .container {
-      width: 95%;
-    }
-  
-    .info-section {
-      flex-direction: column;
-      align-items: center;
-    }
-  
-    .info-tab {
-      margin-bottom: 10px;
-    }
-  }
-  
-  
+
+
+.review-section {
+  margin-top: 20px;
+  border-top: 2px solid #000; /* Top border line as per the design */
+}
+
+.review-tabs {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  border-bottom: 1px solid #ccc; /* Bottom border line for tabs */
+}
+
+.tab-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  border-bottom: none; /* Remove bottom border to blend with the content box */
+  margin-right: 5px; /* Spacing between tabs */
+}
+
+.tab-item:hover {
+  background-color: #e8e8e8;
+}
+
+/* Active tab item style */
+.tab-item.active {
+  background-color: #fff;
+  font-weight: bold;
+}
+
+.review-content {
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-top: none; /* Remove top border to blend with the tabs */
+}
+
+.tab-panel {
+  display: none; /* Hide all tab panels by default */
+}
+
+.tab-panel.active {
+  display: block; /* Show active tab panel */
+}
