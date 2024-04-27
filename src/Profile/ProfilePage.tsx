@@ -1,6 +1,8 @@
 // ProfileManagement.tsx
 import React, { useState, useEffect } from 'react';
 import supabase from '../supabaseClient'; // Import Supabase client
+import { UserResponse } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
 
 // Types
 type Profile = {
@@ -97,9 +99,27 @@ const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
 );
 
 // ProfilePage Component
-const ProfilePage: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
+const ProfilePage: React.FC = () => {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [editing, setEditing] = useState(false);
+    const [user, setUser] = useState<UserResponse | null>(null);
+    const navigate = useNavigate();
+    var userLoggedIn = false;
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const currentUser = await supabase.auth.getUser();
+                setUser(currentUser);
+                userLoggedIn = true;
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            }   
+        };
+        fetchUser();
+    }, []);
+
+    
+
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -141,6 +161,10 @@ const ProfilePage: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
         setEditing(false);
     };
 
+    if (!userLoggedIn) {
+        navigate('/login');
+    }
+    
     return (
         <div>
             <h1 className="text-2xl font-semibold text-gray-900 p-4">Profile</h1>

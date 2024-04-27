@@ -8,6 +8,7 @@ import Header from './commons/Header';
 import ProfilePage from './Profile/ProfilePage';
 import Messages from './Messages/Messages';
 import Details from "./Details/Details";
+import UserPage from './Profile/OtherProfilePage';
 function App() {
    return (
       <>
@@ -22,7 +23,7 @@ function App() {
             <Route path="/login" element = {<Login />}/>
             {/* <Route path="/auth/logout" exact render={LogOut} /> */}
             {/* <Route path='/add-product' element={<CreateSell/>} />; */}
-            <Route path="/profile" element={<ProfilePage isLoggedIn={isLoggedIn} />} />
+            <Route path="/profile" element={<ProfilePage/>} />
             <Route path="/profile/:username" element={<UserPage/>} />
             {/* <Route path='/profile/:id' element={<ProfilePage isLoggedIn={false}/>} />; */}
             {/* <Route path='/profile/:id/edit' element={<Edit/>} />; */}
@@ -34,5 +35,6 @@ function App() {
          </HashRouter>
       </>
    );
+}
 
 export default App;
