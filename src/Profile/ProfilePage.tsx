@@ -1,6 +1,8 @@
 // ProfileManagement.tsx
 import React, { useState, useEffect } from 'react';
 import supabase from '../supabaseClient'; // Import Supabase client
+import { UserResponse } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
 
 // Types
 type Profile = {
@@ -8,6 +10,10 @@ type Profile = {
     last_name: string;
     email: string;
     username: string;
+    role: string;
+    liked_posts: string[];
+    selling_posts: string[];
+    profileURL: string;
 };
 
 type ProfileFieldProps = {
@@ -70,32 +76,30 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, on
         onSave(formData);
     };
     return (
-        <div className="my-4 rounded-lg border border-gray-100 bg-white p-6 shadow">
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <ProfileField label="First Name" value={formData.first_name} editing={true} onChange={handleInputChange('first_name')} />
-                <ProfileField label="Last Name" value={formData.last_name} editing={true} onChange={handleInputChange('last_name')} />
-                <ProfileField label="Username" value={formData.username} editing={true} onChange={handleInputChange('username')} />
-                <ProfileField label="Email" value={formData.email} editing={true} onChange={handleInputChange('email')} inputType="email" />
-                <div className="flex justify-end space-x-2">
-                    <button type="button" onClick={onCancel} className="rounded bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300">
-                        Cancel
-                    </button>
-                    <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                        Save Changes
-                    </button>
-                </div>
-            </form>
-        </div>
+        <form onSubmit={handleSubmit} className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
+            <ProfileField label="First Name" value={formData.first_name} editing={true} onChange={handleInputChange('first_name')} />
+            <ProfileField label="Last Name" value={formData.last_name} editing={true} onChange={handleInputChange('last_name')} />
+            <ProfileField label="Username" value={formData.username} editing={true} onChange={handleInputChange('username')} />
+            <ProfileField label="Email" value={formData.email} editing={true} onChange={handleInputChange('email')} inputType="email" />
+            <ProfileField label="Role" value={profile.role} editing={false} />
+            <div className="flex justify-end p-3">
+                <button type="button" onClick={onCancel} className="btn mr-2">Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
     );
 };
 
 // UserInfo Component
 const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
-    <div className="my-4 rounded-lg border border-gray-100 bg-white p-6 shadow">
+    <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
+        <img src={profile.profileURL} alt="Profile" />
         <ProfileField label="First Name" value={profile.first_name} editing={false} />
         <ProfileField label="Last Name" value={profile.last_name} editing={false} />
         <ProfileField label="Username" value={profile.username} editing={false} />
         <ProfileField label="Email" value={profile.email} editing={false} />
+        <ProfileField label="Role" value={profile.role} editing={false} />
+        <ProfileField label="Profile Picture" value={profile.profileURL} editing={false} />
         <div className="flex justify-end p-3">
             <button onClick={onEdit} className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                 Edit
@@ -106,27 +110,57 @@ const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
 );
 
 // ProfilePage Component
-const ProfilePage: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
+const ProfilePage: React.FC = () => {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [editing, setEditing] = useState(false);
+    const [user, setUser] = useState<UserResponse | null>(null);
+    const navigate = useNavigate();
+    
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                await supabase.auth.getUser()
+                    .then(currentUser => {
+                        setUser(currentUser);
+    
+                        if (!currentUser) {
+                            navigate('/login');
+                        }
+                    });
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            }   
+        };
+        fetchUser();
+    }, [navigate]);
+
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('*')
-                    .single();
-
+                const { data: { user }, error } = await supabase.auth.getUser();
                 if (error) {
                     throw error;
                 }
-
-                setProfile(data);
+    
+                if (user) {
+                    const { data, error } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('id', user.id)
+                        .single();
+    
+                    if (error) {
+                        throw error;
+                    }
+    
+                    setProfile(data);
+                }
             } catch (error) {
                 console.error('Error fetching profile:', error);
             }
         };
+    
         fetchProfile();
     }, []);
 
@@ -134,22 +168,21 @@ const ProfilePage: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
         try {
             const {
                 data: { user },
-            } = await supabase.auth.getUser();
-            if (user) {
+              } = await supabase.auth.getUser();
+              if (user) {
                 const { data, error } = await supabase
-                    .from('users')
-                    .update(updatedProfile)
-                    .match({ id: user.id });
+                .from('users')
+                .update(updatedProfile)
+                .match({ id: user.id });
                 setProfile(updatedProfile);
-            } else {
+              } else {
                 console.error("No user found");
-            }
+              }      
         } catch (error) {
             console.error('Error updating profile:', error);
         }
         setEditing(false);
     };
-
     return (
         <div>
             <h1 className="text-2xl font-semibold text-gray-900 p-4">Profile</h1>

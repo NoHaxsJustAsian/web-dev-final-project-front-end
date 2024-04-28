@@ -55,7 +55,6 @@ function Details() {
    
     useEffect(() => {
         const fetchDetails = async () => {
-          
             try {
                 setLoading(true);
                 // Fetching product details
@@ -69,8 +68,6 @@ function Details() {
                 console.log('Post data:', postData);
                 setPost(postData);
                 
-                
-                
                 const { data: userData, error: userError } = await supabase
                     .from('users')
                     .select('*')
@@ -81,7 +78,6 @@ function Details() {
                     } else {
                         setUserRole('unknown');
                     }
-
                 // Fetching reviews related to the product
                 const { data: reviewData, error: reviewError } = await supabase
                     .from('reviews')
@@ -111,6 +107,7 @@ function Details() {
                     } else {
                         setUserRole('unknown'); // Set role to 'unknown' if no user is logged in
                     }
+
                 } catch (err) {
                     console.error('Error fetching profile:', error);
                 } finally {
@@ -356,8 +353,6 @@ function Details() {
             </div>
         </section>
     );
-    
-    
 }
 
 export default Details;

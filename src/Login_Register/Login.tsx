@@ -9,14 +9,52 @@ function AuthScreen() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [profileURL, setProfileURL] = useState("");
+
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+        const file = e.target.files[0];
+        await uploadFile(file);
+    }
+};
+
+const uploadFile = async (file: File) => {
+  const timestamp = new Date().getTime();
+  const fileExtension = file.name.split('.').pop();
+  if (fileExtension !== "jpg" && fileExtension !== "png") {
+    setError("Only JPEG and PNG files are allowed.");
+    return;
+}
+  const fileName = `${timestamp}.${fileExtension}`;
+  const filePath = `profile_pictures/${fileName}`;
+  
+
+  const { data, error } = await supabase.storage.from('profile').upload(filePath, file);
+  if (error) {
+      console.error('Error uploading file:', error);
+  } else {
+      console.log('File uploaded successfully');
+      const { data: urlData} = supabase.storage.from('profile').getPublicUrl(filePath);
+          console.log('File URL:', urlData.publicUrl);
+          setProfileURL(urlData.publicUrl);
+  } 
+};
 
   const handleAuth = async () => {
     setLoading(true);
     setError("");
+
+    if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email)) {
+      setError("Invalid email format.");
+      setLoading(false);
+      return;
+    }
 
     if (formMode === "register") {
       if (password !== confirmPassword) {
@@ -36,7 +74,7 @@ function AuthScreen() {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          createProfile(user.id, firstName, lastName, userRole, email);
+          await createProfile(user.id, firstName, lastName, userRole, email, username, profileURL);
         } else {
           console.error("No user found");
         }
@@ -58,7 +96,9 @@ function AuthScreen() {
     firstName: string,
     lastName: string,
     role: string,
-    email: string
+    email: string,
+    username: string,
+    profileURL: string
   ) {
     const { data, error } = await supabase.from("users").insert([
       {
@@ -67,6 +107,8 @@ function AuthScreen() {
         last_name: lastName,
         role: role,
         email: email,
+        username: username,
+        profileURL: profileURL
       },
     ]);
 
@@ -75,6 +117,7 @@ function AuthScreen() {
     } else {
       console.log("Profile created successfully:", data);
     }
+    nav("/dashboard");
   }
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -121,6 +164,13 @@ function AuthScreen() {
         value={lastName}
         onChange={(e) => setLastName(e.target.value)}
       />
+      <input
+        type="text"
+        placeholder="Username"
+        className="mt-1 w-full rounded-md border-gray-200 bg-white text-ml p-3 text-gray-700 shadow-sm"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
       <select
         value={userRole}
         onChange={(e) => setUserRole(e.target.value)}
@@ -150,6 +200,12 @@ function AuthScreen() {
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
       />
+      <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => handleFileChange(e)}
+    className="mt-1 w-full rounded-md border-gray-200 bg-white text-ml p-3 text-gray-700 shadow-sm"
+/>
     </>
   );
 
