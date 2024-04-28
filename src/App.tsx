@@ -9,6 +9,7 @@ import ProfilePage from './Profile/ProfilePage';
 import Messages from './Messages/Messages';
 import Details from "./Details/Details";
 import UserPage from './Profile/OtherProfilePage';
+import CreateProduct from './Product/CreateProduct';
 function App() {
    return (
       <>
@@ -31,6 +32,7 @@ function App() {
             <Route path='/messages/:id' element={<Messages/>} />; */}
             <Route element={<Error404/>} />
              <Route path="/details/:postId" element={<Details />} />
+             <Route path="/add-product" element={<CreateProduct />} />
             </Routes>
          </HashRouter>
       </>
