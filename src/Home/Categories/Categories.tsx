@@ -107,7 +107,7 @@ function Categories() {
         const post = posts.find(post => post.id === id);
         
         if (post) {
-            setCart(posts.filter(post => post.id !== id));
+            setCart(cart.filter(post => post.id !== id));
             setTotalPrice(totalPrice - post.price);
         }
     }
