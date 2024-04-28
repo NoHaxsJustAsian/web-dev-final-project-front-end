@@ -71,12 +71,19 @@ function Categories() {
 
         fetchUser();
 
+        //fetches cart if user leaves
+
         const fetchCart = async () => {
             const { data: cartData, error } = await supabase.from('cart').select('*').eq('user_id', userId);
             if (cartData) {
-                setCart(cartData[0].posts);
-                // const 
-                // setTotalPrice(total);
+                setCart(cartData);
+                const postIds = cartData[0].posts;
+                const total = postIds.reduce((acc: number, id: number) => {
+                    const post = posts.find(post => post.id === id);
+                    return acc + (post ? post.price : 0);
+                }, 0);
+                setTotalPrice(total);
+        
             }
         }
 
@@ -123,6 +130,7 @@ function Categories() {
             .delete()
             .in('id', postIds);
         setCart([]);
+        setPosts([]);
         setTotalPrice(0);
     }
 
@@ -239,7 +247,12 @@ function Categories() {
                   className="inline-block rounded bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700"
                   onClick={async () => {
                     
-                      await handleCheckout(cart, userId);
+                    try {
+                        await handleCheckout(cart, userId);
+                        alert('Checkout successful!');
+                      } catch (error) {
+                        alert(`Checkout failed`);
+                      }
                   }}>
                   Checkout
                 </button>
