@@ -38,6 +38,6 @@
 }
 
 body {
-  background-color: #0A122A;
+  background: linear-gradient(to left, #5f56d8, #2c2d30);
   color: #ffffff;
 }

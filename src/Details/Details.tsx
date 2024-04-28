@@ -404,22 +404,22 @@ function Details() {
                 </div>
             </div>
         </section>
-        {user && userRole !== 'seller' ? (
-    userRole === 'buyer' && (
-        <>
-            <ReviewList postid={postIdNumber} />
-            <ReviewForm postid={postIdNumber} />
-        </>
-    )
-) : (
+        {user && userRole === 'buyer' && (
+    <>
+        <ReviewList postid={postIdNumber} />
+        <ReviewForm postid={postIdNumber} />
+    </>
+)}
+
+{(userRole !== 'buyer' && userRole !== 'seller') && (
     <div className="flex justify-center mt-4">
         <a href="#/login" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
             You must be logged in as a buyer to leave a review.
         </a>
     </div>
 )}
-        </div>
-    );
+</div>
+);
 }
 
 export default Details;
