@@ -5,6 +5,8 @@ import { UserResponse } from '@supabase/supabase-js';
 import axios from 'axios';
 // import ProfilePage from '../Profile/Profile';
 import './Details.css';
+import ReviewList from '../Review/ReviewListPost';
+import ReviewForm from '../Review/ReviewForm';
 
 type PostData = {
     id: number;
@@ -40,6 +42,7 @@ function Details() {
     const [user, setUser] = useState<UserResponse | null>(null);
     const [userRole, setUserRole] = useState("");
     const { postId } = useParams<{ postId: string }>();
+    const postIdNumber = Number(postId);
     const { userName } = useParams();
     const [post, setPost] = useState<PostData | null>(null);
     const [reviews, setReviews] = useState<ReviewData[] | null>(null);
@@ -307,6 +310,7 @@ function Details() {
 
       const commonButtonStyle = "inline-flex items-center justify-center gap-2 rounded-full border border-rose-600 px-5 py-3 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-600 hover:text-white";
       return (
+        <div>
         <section className="bg-gray-50">
             <div className="mx-auto max-w-screen-2xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16 bg-blue-100">
                 <div className="md:flex md:items-start md:justify-between md:space-x-8">
@@ -342,28 +346,11 @@ function Details() {
                         </button>
                     </div>
                 </div>
-                <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
-                    {reviews ? reviews.map(review => (
-                        <blockquote key={review.id} className="flex h-full flex-col justify-between rounded-lg border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
-                            <div>
-                                <p className="text-left text-2xl font-bold text-rose-600">{review.title}</p>
-                                <p className="mt-4 text-left text-gray-700">{review.description}</p>
-                            </div>
-                            <footer className="mt-4 text-right">
-                                <button
-                                    onClick={() => navigate(`/profile/${review.created_by}`)}
-                                    className="rounded bg-pink-100 px-3 py-1 text-sm font-medium text-pink-600 transition-colors hover:bg-pink-200"
-                                >
-                                    {review.created_by}
-                                </button>
-                            </footer>
-                        </blockquote>
-                    )) : (
-                        <p className="text-gray-700">No reviews available.</p>
-                    )}
-                </div>
             </div>
         </section>
+        <ReviewList postid={postIdNumber} />
+        <ReviewForm postid={postIdNumber} />
+        </div>
     );
 }
 

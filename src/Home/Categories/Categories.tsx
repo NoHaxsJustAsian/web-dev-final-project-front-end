@@ -137,15 +137,12 @@ function Categories() {
 
     return (
         <>
+            <div className="container">
             <div id="sider">
                 <InputGroup className="mb-3">
-                <input className="col-lg-6" type="text" placeholder="Search..." name="search" value={query} onChange={handleSearchChange} />
-                    <Button variant="outline-secondary" onClick={handleSearch}>Search</Button>
-                    <Button variant="outline-danger" onClick={handleReset}>Reset</Button>
-                   
+                <input className="ring-grey ring-2 col-lg-6 text-black" type="text" placeholder="Search..." name="search" value={query} onChange={handleSearchChange} />
                 </InputGroup>
             </div>
-            <div className="container">
                 <p className="text-2xl font-bold">Posts</p>
                 
                 {!loading ? (
