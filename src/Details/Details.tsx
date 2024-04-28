@@ -332,7 +332,7 @@ function Details() {
                             Created at: {post ? new Date(post.created_at).toLocaleDateString() : 'Date'}
                         </p>
                         <p className="text-left text-sm text-gray-600">
-                            Seller: {post ? post.created_by : 'Seller'}
+                            Seller: {post ? post.user_id : 'Seller'}
                         </p>
                         {renderActions()}
                         <div className="mt-4 flex justify-end items-end space-x-2">
