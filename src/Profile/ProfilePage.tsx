@@ -44,7 +44,7 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
     inputType = 'text'
 }) => {
     return (
-        <div className="grid grid-cols-1 gap-1 p-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
+        <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
             <dt className="font-medium text-gray-900">{label}</dt>
             <dd className="text-gray-700 sm:col-span-2">
                 {editing ? (
@@ -52,15 +52,16 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
                         type={inputType}
                         value={value}
                         onChange={onChange}
-                        className="form-input w-full rounded-md"
+                        className="form-input w-full rounded-md border border-gray-300 px-4 py-2"
                     />
                 ) : (
-                    value
+                    <span className="block py-2 text-left">{value}</span>
                 )}
             </dd>
         </div>
     );
 };
+
 
 // EditProfileForm Component
 const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, onSave }) => {
@@ -74,7 +75,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, on
         event.preventDefault();
         onSave(formData);
     };
-
     return (
         <form onSubmit={handleSubmit} className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
             <ProfileField label="First Name" value={formData.first_name} editing={true} onChange={handleInputChange('first_name')} />
@@ -101,9 +101,12 @@ const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
         <ProfileField label="Role" value={profile.role} editing={false} />
         <ProfileField label="Profile Picture" value={profile.profileURL} editing={false} />
         <div className="flex justify-end p-3">
-            <button onClick={onEdit} className="btn btn-primary">Edit</button>
+            <button onClick={onEdit} className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                Edit
+            </button>
         </div>
     </div>
+
 );
 
 // ProfilePage Component
@@ -136,7 +139,6 @@ const ProfilePage: React.FC = () => {
         const fetchProfile = async () => {
             try {
                 const { data: { user }, error } = await supabase.auth.getUser();
-    
                 if (error) {
                     throw error;
                 }
@@ -181,7 +183,6 @@ const ProfilePage: React.FC = () => {
         }
         setEditing(false);
     };
-
     return (
         <div>
             <h1 className="text-2xl font-semibold text-gray-900 p-4">Profile</h1>
