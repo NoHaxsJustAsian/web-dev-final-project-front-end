@@ -2,50 +2,36 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import supabase from '../supabaseClient';
+import ReviewList from '../Review/ReviewList';
 
 type Profile = {
     first_name: string;
     last_name: string;
     email: string;
     username: string;
+    role: string;
+    reviews: string[];
+    selling_posts: string[];
+    profileURL: string;
 };
 
 type UserInfoProps = {
   profile: Profile;
 };
 
-type ProfileFieldProps = {
-    label: string;
-    value: string;
-};
-
-const ProfileField: React.FC<ProfileFieldProps> = ({
-    label,
-    value,
-}) => {
-    return (
-        <div className="grid grid-cols-1 gap-1 p-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
-            <dt className="font-medium text-gray-900">{label}</dt>
-            <dd className="text-gray-700 sm:col-span-2">
-                {
-                    value
-                }
-            </dd>
+const UserInfo: React.FC<UserInfoProps> = ({ profile }) => (
+    <article className="flow-root rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-lg sm:p-6 max-w-md mx-auto sm:mx-4">
+      <h1 className="text-2xl font-bold">Profile</h1>
+        <img src={profile.profileURL} className="h-40 w-40 rounded-full" />
+        <div className="flex items-center space-x-4">
+            <div>
+                <h2 className="text-lg leading-6 font-medium text-gray-900">{`${profile.first_name} ${profile.last_name}`}</h2>
+                <p className="mt-1 text-sm text-gray-500">@{profile.username}</p>
+                <p className="mt-1 text-sm text-gray-500">{profile.role}</p>
+            </div>
         </div>
-    );
-};
-
-
-const UserInfo: React.FC<UserInfoProps> = ({ profile }) => {
-  return (
-    <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
-        <ProfileField label="First Name" value={profile.first_name} />
-        <ProfileField label="Last Name" value={profile.last_name}/>
-        <ProfileField label="Username" value={profile.username}/>
-        <ProfileField label="Email" value={profile.email}/>
-    </div>
-  );
-};
+    </article>
+);
 
 const UserPage: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -73,7 +59,12 @@ const UserPage: React.FC = () => {
     return <div>404 Profile Not Found</div>;
   }
 
-  return <UserInfo profile={profile} />;
+  return (
+  <div>
+    <UserInfo profile={profile} />
+    <ReviewList reviewIds={profile.reviews} />
+  </div>
+)
 };
 
 export default UserPage;

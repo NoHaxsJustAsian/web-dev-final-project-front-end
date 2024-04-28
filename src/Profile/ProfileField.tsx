@@ -27,7 +27,7 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
                         className="form-input w-full rounded-md border border-gray-300 px-4 py-2"
                     />
                 ) : (
-                    <span className="block py-2 text-left">{value}</span>
+                    <span className="mt-2 line-clamp-3 text-sm/relaxed text-gray-500">{value}</span>
                 )}
             </dd>
         </div>

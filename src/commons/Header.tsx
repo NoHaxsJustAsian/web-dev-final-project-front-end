@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react';
-import supabase from '../supabaseClient'; // Import supabase client
-import { Navbar, NavDropdown, Nav, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { NavLink, useLocation } from 'react-router-dom';
-import { BsFillPersonFill, BsFillEnvelopeFill, BsFillPlusCircleFill } from 'react-icons/bs';
-import { GiHamburgerMenu } from 'react-icons/gi';
-import { IoLogOut } from 'react-icons/io5';
+import supabase from '../supabaseClient';
+import {useLocation, Link, useNavigate } from 'react-router-dom';
+
 import './Header.css';
 
 function Header() {
-
+    const nav = useNavigate();
     const location = useLocation();
     const [user, setUser] = useState<any>(null);
     const [role, setRole] = useState<string | null>(null); // New state for role
@@ -53,58 +50,49 @@ function Header() {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-    };
-
-    const logoStyles = {
-        height: 'auto',
-        width: window.innerWidth > 768 ? '200px' : '150px',  // Adjust logo size based on screen width
+        nav('/');
     };
 
     return (
-        <Navbar collapseOnSelect expand="lg" bg="light" variant="light">
-            <div className="container">
-                <Navbar.Brand>
-                    <NavLink to="/">
-                        <img 
-                            src={`${process.env.PUBLIC_URL}/logo-black-horizontal-crop.png`}
-                            style={logoStyles} 
-                            alt="Logo"
-                        />
-                    </NavLink>
-                </Navbar.Brand>
-                <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-                <Navbar.Collapse id="responsive-navbar-nav">
-                    <Nav className="mr-auto"></Nav>
-                    {user && role !== 'buyer' ? (
-                        <Nav>
-                            <NavLink className="nav-item" id="addButton" to="/add-product">
-    <OverlayTrigger key="bottom" placement="bottom"
-        overlay={<Tooltip id={`tooltip-bottom`}><strong>Add</strong> a sell.</Tooltip>}>
-        <BsFillPlusCircleFill size={35} />
-    </OverlayTrigger>
-</NavLink>
-                            <NavDropdown title={<GiHamburgerMenu size={30} />} id="collapsible-nav-dropdown">
-                                <NavLink className="dropdown-item" to="/profile">
-                                    <BsFillPersonFill /> Profile
-                                </NavLink>
-                                <NavLink className="dropdown-item" to="/messages">
-                                    <BsFillEnvelopeFill /> Messages
-                                </NavLink>
-                                <NavDropdown.Divider />
-                                <NavLink className="dropdown-item" to="/" onClick={handleLogout}>
-                                    <IoLogOut /> Log out
-                                </NavLink>
-                            </NavDropdown>
-                        </Nav>
-                    ) : (
-                        <Nav>
-                            <NavLink className="nav-link" to="/login">Login</NavLink>
-                        </Nav>
-                    )}
-                </Navbar.Collapse>
+        <header className="text-gray-600 body-font">
+            <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
+                <Link className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0" to="/">
+                <img
+                    src="/logo-black-horizontal-crop.png"
+                    alt="Logo"
+                    style={{
+                        height: '100%',
+                        maxWidth: '200px',
+                        objectFit: 'contain',
+                    }}
+                    className="justify-left"
+                />
+                </Link>
+                <nav className="md:ml-auto flex flex-wrap items-center text-base justify-center">
+            {user && (
+                <>
+                    <Link className="mr-5 hover:text-gray-900" to="/profile">Profile</Link>
+                    {role === 'buyer' && <Link className="mr-5 hover:text-gray-900" to="/add-product">Add Product</Link>}
+                    <button 
+                    type="button" 
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" 
+                    onClick={handleLogout}
+                >
+                    Log out
+                </button>
+                </>
+            )}
+            {!user && <button 
+                        type="button" 
+                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" 
+                        onClick={() => nav('/login')}
+                    >
+                        Login
+                    </button>}
+        </nav>
             </div>
-        </Navbar>
+        </header>
     );
-}
+};
 
 export default Header;

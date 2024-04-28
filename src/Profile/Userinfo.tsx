@@ -18,20 +18,22 @@ type UserInfoProps = {
 };
 
 const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
-    <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
-        <img src={profile.profileURL} alt="Profile" />
-        <ProfileField label="First Name" value={profile.first_name} editing={false} />
-        <ProfileField label="Last Name" value={profile.last_name} editing={false} />
-        <ProfileField label="Username" value={profile.username} editing={false} />
-        <ProfileField label="Email" value={profile.email} editing={false} />
-        <ProfileField label="Role" value={profile.role} editing={false} />
-        <ProfileField label="Profile Picture" value={profile.profileURL} editing={false} />
-        <div className="flex justify-end p-3">
+    
+    <article className="flow-root rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-lg sm:p-6 max-w-md mx-auto sm:mx-4">
+    <h1 className="text-2xl font-bold">Profile</h1>
+    <img src={profile.profileURL} className="h-40 w-40 rounded-full mx-auto" />
+    <div className="mt-4 space-y-2">
+        <h2 className="text-lg leading-6 font-medium text-gray-900">{`${profile.first_name} ${profile.last_name}`}</h2>
+        <p className="text-sm text-blue-500">@{profile.username}</p>
+        <p className="text-sm text-gray-500">{profile.email}</p> 
+        <p className="text-sm text-gray-500">{profile.role}</p>
+    </div>
+    <div className="flex justify-end p-3">
             <button onClick={onEdit} className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                 Edit
             </button>
         </div>
-    </div>
+</article>
 );
 
 export default UserInfo;

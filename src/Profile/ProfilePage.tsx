@@ -95,7 +95,6 @@ const ProfilePage: React.FC = () => {
     };
     return (
         <div>
-            <h1 className="text-2xl font-semibold text-gray-900 p-4">Profile</h1>
             {profile && (editing ? (
                 <EditProfileForm profile={profile} onCancel={() => setEditing(false)} onSave={handleSave} />
             ) : (
