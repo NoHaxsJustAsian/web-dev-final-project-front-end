@@ -25,18 +25,33 @@ type ReviewData = {
     created_by: string; 
 };
 
-type UserData = {
-  first_name: string;
-  last_name: string;
-  email: string;
-  username: string;
-  role: string;
-  liked_posts: string[];
-  selling_posts: string[];
-  profileURL: string;
-}
+type Review = {
+    timestamp: string;
+    description: string;
+    title: string;
+    userid: string;
+    postid: number;
+    username: string;
+};
+
+type User = {
+    first_name: string;
+    last_name: string;
+    email: string;
+    username: string;
+    role: string;
+    reviews: string[];
+    selling_posts: string[];
+    profileURL: string;
+};
+
+type ReviewProps = {
+    reviewIds: string[];
+};
 
 function Details() {
+    const [reviewsData, setReviewsData] = useState<Review[]>([]);
+    const [profile, setProfile] = useState<User>();
     const [user, setUser] = useState<UserResponse | null>(null);
     const [userRole, setUserRole] = useState("");
     const { postId } = useParams<{ postId: string }>();
@@ -68,6 +83,47 @@ function Details() {
       };
       fetchUser();
   }, [navigate]);
+  useEffect(() => {
+    const fetchProfileAndReviews = async () => {
+        try {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error) {
+                throw error;
+            }
+
+            if (user) {
+                const { data, error } = await supabase
+                    .from('posts')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (error) {
+                    throw error;
+                }
+
+                setUser(data);
+            }
+
+            if (user) {
+                const { data: reviews, error: reviewsError } = await supabase
+                    .from('reviews')
+                    .select('*')
+                    .eq('postid', user.id);
+
+                if (reviewsError) {
+                    throw reviewsError;
+                }
+
+                setReviewsData(reviews);
+            }
+        } catch (error) {
+            console.error('Error fetching profile and reviews:', error);
+        }
+    };
+
+    fetchProfileAndReviews();
+}, []);
 
    
       
@@ -302,7 +358,7 @@ function Details() {
 
 
       const goBackToDashboard = () => {
-        navigate('/dashboard');
+        navigate('/');
     };
 
       const commonButtonStyle = "inline-flex items-center justify-center gap-2 rounded-full border border-rose-600 px-5 py-3 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-600 hover:text-white";
