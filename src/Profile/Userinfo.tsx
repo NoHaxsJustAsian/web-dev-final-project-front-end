@@ -24,9 +24,9 @@ const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
     <img src={profile.profileURL} className="h-40 w-40 rounded-full mx-auto" />
     <div className="mt-4 space-y-2">
         <h2 className="text-lg leading-6 font-medium text-gray-900">{`${profile.first_name} ${profile.last_name}`}</h2>
-        <p className="text-sm text-blue-500">@{profile.username}</p>
-        <p className="text-sm text-gray-500">{profile.email}</p> 
-        <p className="text-sm text-gray-500">{profile.role}</p>
+        <p className="text-sm font-medium text-green-500">@{profile.username}</p>
+        <p className="text-sm text-pretty text-gray-500">{profile.email}</p> 
+        <p className="text-sm text-pretty text-gray-500">{profile.role}</p>
     </div>
     <div className="flex justify-end p-3">
             <button onClick={onEdit} className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">

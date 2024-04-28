@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import supabase from '../supabaseClient';
 import {useLocation, Link, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 import './Header.css';
 
@@ -71,7 +73,9 @@ function Header() {
                 <nav className="md:ml-auto flex flex-wrap items-center text-base justify-center">
             {user && (
                 <>
-                    <Link className="mr-5 hover:text-gray-900" to="/profile">Profile</Link>
+                    <Link className="no-underline mr-5 text-green-500" to="/profile">
+    <FontAwesomeIcon icon={faUser} />
+</Link>
                     {role === 'seller' && <Link className="mr-5 hover:text-gray-900" to="/add-product">Add Product</Link>}
                     <button 
                     type="button" 

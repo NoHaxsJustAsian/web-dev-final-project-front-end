@@ -8,6 +8,7 @@ type Review = {
     title: string;
     userid: string;
     postid: number;
+    username: string;
 };
 
 type User = {
@@ -71,21 +72,27 @@ const ReviewList: React.FC<ReviewProps> = ({ reviewIds }) => {
     }, []);
 
     return (
-        <>
-            {reviewsData.map((reviewData, index) => (
-                user && (
-                    <ReviewCard
-                        key={index}
-                        timestamp={reviewData.timestamp}
-                        title={reviewData.title}
-                        description={reviewData.description}
-                        postid = {reviewData.postid}
-                        userFirst= {user.first_name}
-                        userLast= {user.last_name}
-                    />
-                )
-            ))}
-        </>
+        <div className="mb-8 mt-8 mx-auto sm:mx-4 max-w-2xl p-4 sm:p-6 bg-white rounded-lg shadow-sm transition hover:shadow-lg border border-gray-100">
+            <h2 className="text-lg font-bold text-gray-900 sm:text-xl mb-4">Reviews</h2>
+            <div className="grid grid-cols-2 gap-4">
+                {reviewsData.map((reviewData, index) => (
+                    user && (
+                        <div className="max-w-md">
+                            <ReviewCard
+                                key={index}
+                                timestamp={reviewData.timestamp}
+                                title={reviewData.title}
+                                description={reviewData.description}
+                                postid = {reviewData.postid}
+                                userFirst= {user.first_name}
+                                userLast= {user.last_name}
+                                username= {user.username}
+                            />
+                        </div>
+                    )
+                ))}
+            </div>
+        </div>
     );
 };
 

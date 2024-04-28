@@ -26,8 +26,8 @@ const UserInfo: React.FC<UserInfoProps> = ({ profile }) => (
         <div className="flex items-center space-x-4">
             <div>
                 <h2 className="text-lg leading-6 font-medium text-gray-900">{`${profile.first_name} ${profile.last_name}`}</h2>
-                <p className="mt-1 text-sm text-gray-500">@{profile.username}</p>
-                <p className="mt-1 text-sm text-gray-500">{profile.role}</p>
+                <p className="mt-1 text-sm font-medium text-green-500">@{profile.username}</p>
+                <p className="mt-1 text-sm text-pretty text-gray-500">{profile.role}</p>
             </div>
         </div>
     </article>
