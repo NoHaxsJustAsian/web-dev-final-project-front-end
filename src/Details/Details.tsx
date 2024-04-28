@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import supabase from "../supabaseClient";
+import { UserResponse } from '@supabase/supabase-js';
 import axios from 'axios';
+// import ProfilePage from '../Profile/Profile';
 import './Details.css';
 
 type PostData = {
@@ -11,7 +13,7 @@ type PostData = {
     description: string;
     user_id: number;
     price: string;
-    image_url: string;
+    img_url: string;
     created_by: string; 
 };
 
@@ -24,15 +26,19 @@ type ReviewData = {
 };
 
 type UserData = {
-    id: number;
-    email: string;
-    username: string;
-    profileURL: string;
-    role: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  username: string;
+  role: string;
+  liked_posts: string[];
+  selling_posts: string[];
+  profileURL: string;
 }
 
 function Details() {
-    const [userRole, setUserRole] = useState("seller");
+    const [user, setUser] = useState<UserResponse | null>(null);
+    const [userRole, setUserRole] = useState("");
     const { postId } = useParams<{ postId: string }>();
     const { userName } = useParams();
     const [post, setPost] = useState<PostData | null>(null);
@@ -44,15 +50,27 @@ function Details() {
     const [editPostData, setEditPostData] = useState<PostData | null>(null);
     const [quantity, setQuantity] = useState(1);
 
-    const incrementQuantity = () => {
-        setQuantity(prevQuantity => prevQuantity + 1);
+
+    useEffect(() => {
+      const fetchUser = async () => {
+          try {
+              await supabase.auth.getUser()
+                  .then(currentUser => {
+                      setUser(currentUser);
+  
+                      if (!currentUser) {
+                          navigate('/login');
+                      }
+                  });
+          } catch (error) {
+              console.error('Error fetching user:', error);
+          }   
       };
-      
-      const decrementQuantity = () => {
-        setQuantity(prevQuantity => (prevQuantity > 1 ? prevQuantity - 1 : 1));
-      };
+      fetchUser();
+  }, [navigate]);
 
    
+      
     useEffect(() => {
         const fetchDetails = async () => {
             try {
@@ -67,18 +85,7 @@ function Details() {
                 if (postError) throw new Error(postError.message);
                 console.log('Post data:', postData);
                 setPost(postData);
-                
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('username', userName)
-                    .single();
-                    if (userData) {
-                        setUserRole(userData.role);
-                    } else {
-                        setUserRole('unknown');
-                    }
-                
+
                 const { data: reviewData, error: reviewError } = await supabase
                     .from('reviews')
                     .select('*')
@@ -87,27 +94,26 @@ function Details() {
                     if (reviewError) throw new Error(reviewError.message);
                     setReviews(reviewData);  
                     console.log("Reviews:", reviewData);
-
-                    
                     console.log('Image URL:', postData?.image_url);
-                    const { data: { user } } = await supabase.auth.getUser()
-                    if (user) {
-                        const { data: userData, error: userError } = await supabase
-                            .from('users')
-                            .select('role')
-                            .eq('username', user.id)  
-                            .single();
-        
-                        if (userError || !userData) {
-                            console.error('Failed to fetch user data:', userError);
-                            setUserRole('unknown'); 
-                        } else {
-                            setUserRole(userData.role); 
-                        }
-                    } else {
-                        setUserRole('unknown');
-                    }
-
+                const { data: { user }, error } = await supabase.auth.getUser();
+                  if (error) {
+                      throw error;
+                  }
+      
+                  if (user) {
+                      const { data: userData, error } = await supabase
+                          .from('users')
+                          .select('*')
+                          .eq('id', user.id)
+                          .single();
+      
+                      if (error) {
+                          throw error;
+                      }
+      
+                      setUserRole(userData.role);
+                  }   
+                  
                 } catch (err) {
                     console.error('Error fetching profile:', error);
                 } finally {
@@ -129,7 +135,6 @@ function Details() {
 
       const saveChanges = async () => {
         if (!editPostData) return;
-    
         try {
           const { data, error } = await supabase
             .from('posts')
@@ -155,9 +160,8 @@ function Details() {
               .from('posts')
               .delete()
               .eq('id', postId);
-            
+
             if (error) throw error;
-      
             console.log('Post deleted:', data);
             navigate('/dashboard'); 
           } catch (error) {
@@ -169,6 +173,13 @@ function Details() {
       };
 
       
+      const incrementQuantity = () => {
+        setQuantity(prevQuantity => prevQuantity + 1);
+      };
+    const decrementQuantity = () => {
+      setQuantity(prevQuantity => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+    };
+   
       const renderBuyerActions = () => {
         return (
           <div className="flex flex-col items-start space-y-4">
@@ -285,6 +296,7 @@ function Details() {
           navigate('/login');
           return;
         }
+        alert('Added to cart: ' + quantity); 
         console.log('Added to cart:', quantity);
       };
 
@@ -308,7 +320,7 @@ function Details() {
                         <div className="shrink-0">
                             <img
                               
-                                src={post.image_url}
+                                src={post.img_url}
                                 alt={post.title}
                             />
                         </div>
