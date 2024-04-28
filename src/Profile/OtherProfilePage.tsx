@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import supabase from '../supabaseClient';
 import ReviewList from '../Review/ReviewList';
+import ReviewForm from '../Review/ReviewForm';
 
 type Profile = {
     first_name: string;
