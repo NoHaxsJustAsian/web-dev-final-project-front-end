@@ -63,7 +63,7 @@ function Categories() {
             const {data: {user}} = await supabase.auth.getUser();
             const userId = user?.id;
             const {data: userRoleData} = await supabase.from('users').select('role').eq('id', userId).single();
-            if (user && userRoleData?.role === 'seller') {
+            if (user && userRoleData?.role === 'buyer') {
                 setUserId(user?.id);
             }
             console.log('user', userId);
