@@ -13,6 +13,7 @@ type Profile = {
     role: string;
     liked_posts: string[];
     selling_posts: string[];
+    profileURL: string;
 };
 
 type ProfileFieldProps = {
@@ -92,10 +93,13 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, on
 // UserInfo Component
 const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
     <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
+        <img src={profile.profileURL} alt="Profile" />
         <ProfileField label="First Name" value={profile.first_name} editing={false} />
         <ProfileField label="Last Name" value={profile.last_name} editing={false} />
         <ProfileField label="Username" value={profile.username} editing={false} />
         <ProfileField label="Email" value={profile.email} editing={false} />
+        <ProfileField label="Role" value={profile.role} editing={false} />
+        <ProfileField label="Profile Picture" value={profile.profileURL} editing={false} />
         <div className="flex justify-end p-3">
             <button onClick={onEdit} className="btn btn-primary">Edit</button>
         </div>
