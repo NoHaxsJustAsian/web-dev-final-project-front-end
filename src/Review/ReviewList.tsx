@@ -10,13 +10,24 @@ type Review = {
     postid: number;
 };
 
+type User = {
+    first_name: string;
+    last_name: string;
+    email: string;
+    username: string;
+    role: string;
+    reviews: string[];
+    selling_posts: string[];
+    profileURL: string;
+};
+
 type ReviewProps = {
     reviewIds: string[];
 };
 
 const ReviewList: React.FC<ReviewProps> = ({ reviewIds }) => {
     const [reviewsData, setReviewsData] = useState<Review[]>([]);
-
+    const [user, setUser] = useState<User>();
     useEffect(() => {
         const fetchProfileAndReviews = async () => {
             try {
@@ -24,7 +35,21 @@ const ReviewList: React.FC<ReviewProps> = ({ reviewIds }) => {
                 if (error) {
                     throw error;
                 }
+
+                if (user) {
+                    const { data, error } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('id', user.id)
+                        .single();
     
+                    if (error) {
+                        throw error;
+                    }
+    
+                    setUser(data);
+                }
+
                 if (user) {
                     const { data: reviews, error: reviewsError } = await supabase
                         .from('reviews')
@@ -48,14 +73,17 @@ const ReviewList: React.FC<ReviewProps> = ({ reviewIds }) => {
     return (
         <>
             {reviewsData.map((reviewData, index) => (
-                console.log(reviewData),
-                <ReviewCard
-                    key={index}
-                    timestamp={reviewData.timestamp}
-                    title={reviewData.title}
-                    description={reviewData.description}
-                    postid = {reviewData.postid}
-                />
+                user && (
+                    <ReviewCard
+                        key={index}
+                        timestamp={reviewData.timestamp}
+                        title={reviewData.title}
+                        description={reviewData.description}
+                        postid = {reviewData.postid}
+                        userFirst= {user.first_name}
+                        userLast= {user.last_name}
+                    />
+                )
             ))}
         </>
     );
