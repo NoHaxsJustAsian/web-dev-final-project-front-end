@@ -73,21 +73,21 @@ function Categories() {
 
         //fetches cart if user leaves
 
-        const fetchCart = async () => {
-            const { data: cartData, error } = await supabase.from('cart').select('*').eq('user_id', userId);
-            if (cartData) {
-                setCart(cartData);
-                const postIds = cartData[0].posts;
-                const total = postIds.reduce((acc: number, id: number) => {
-                    const post = posts.find(post => post.id === id);
-                    return acc + (post ? post.price : 0);
-                }, 0);
-                setTotalPrice(total);
+        // const fetchCart = async () => {
+        //     const { data: cartData, error } = await supabase.from('cart').select('*').eq('user_id', userId);
+        //     if (cartData) {
+        //         setCart(cartData);
+        //         const postIds = cartData[0].posts;
+        //         const total = postIds.reduce((acc: number, id: number) => {
+        //             const post = posts.find(post => post.id === id);
+        //             return acc + (post ? post.price : 0);
+        //         }, 0);
+        //         setTotalPrice(total);
         
-            }
-        }
+        //     }
+        // }
 
-        fetchCart();
+        // fetchCart();
     }, [query]);
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
