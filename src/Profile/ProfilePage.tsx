@@ -1,8 +1,11 @@
-// ProfileManagement.tsx
+
 import React, { useState, useEffect } from 'react';
-import supabase from '../supabaseClient'; // Import Supabase client
+import supabase from '../supabaseClient';
 import { UserResponse } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
+import EditProfileForm from './EditProfileForm';
+import ReviewList from '../Review/ReviewList';
+import UserInfo from './Userinfo';
 
 // Types
 type Profile = {
@@ -11,137 +14,10 @@ type Profile = {
     email: string;
     username: string;
     role: string;
-    liked_posts: string[];
+    reviews: string[];
     selling_posts: string[];
     profileURL: string;
 };
-
-type ProfileFieldProps = {
-    label: string;
-    value: string;
-    editing: boolean;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-    inputType?: string;
-};
-
-type EditProfileFormProps = {
-    profile: Profile;
-    onCancel: () => void;
-    onSave: (data: Profile) => void;
-};
-
-type UserInfoProps = {
-    profile: Profile;
-    onEdit: () => void;
-};
-
-
-// ProfileField Component
-const ProfileField: React.FC<ProfileFieldProps> = ({
-    label,
-    value,
-    editing,
-    onChange,
-    inputType = 'text'
-}) => {
-    return (
-        <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
-            <dt className="font-medium text-gray-900">{label}</dt>
-            <dd className="text-gray-700 sm:col-span-2">
-                {editing ? (
-                    <input
-                        type={inputType}
-                        value={value}
-                        onChange={onChange}
-                        className="form-input w-full rounded-md border border-gray-300 px-4 py-2"
-                    />
-                ) : (
-                    <span className="block py-2 text-left">{value}</span>
-                )}
-            </dd>
-        </div>
-    );
-};
-
-
-// EditProfileForm Component
-const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile, onCancel, onSave }) => {
-    const [formData, setFormData] = useState<Profile>(profile);
-    const [error, setError] = useState<string | null>(null);
-
-    const handleInputChange = (field: keyof Profile) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [field]: event.target.value });
-    };
-
-    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) {
-            await uploadFile(event.target.files[0]);
-        }
-    };
-
-    const handleSubmit = (event: React.FormEvent) => {
-        event.preventDefault();
-        onSave(formData);
-    };
-
-    const uploadFile = async (file: File) => {
-        const timestamp = new Date().getTime();
-        const fileExtension = file.name.split('.').pop();
-        if (fileExtension !== "jpg" && fileExtension !== "png") {
-          setError("Only JPEG and PNG files are allowed.");
-          return;
-      }
-        const fileName = `${timestamp}.${fileExtension}`;
-        const filePath = `profile_pictures/${fileName}`;
-        
-      
-        const { data, error } = await supabase.storage.from('profile').upload(filePath, file);
-        if (error) {
-            console.error('Error uploading file:', error);
-        } else {
-            console.log('File uploaded successfully');
-            const { data: urlData} = supabase.storage.from('profile').getPublicUrl(filePath);    
-            setFormData({ ...formData, profileURL: urlData.publicUrl });
-            onSave({ ...formData, profileURL: urlData.publicUrl });
-            console.log('File URL:', urlData.publicUrl);
-        } 
-      };
-
-    return (
-        <form onSubmit={handleSubmit} className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
-            <label>Profile Picture</label>
-                <input type="file" onChange={handleFileChange} />
-                {error && <p className="error">{error}</p>}
-            <ProfileField label="First Name" value={formData.first_name} editing={true} onChange={handleInputChange('first_name')} />
-            <ProfileField label="Last Name" value={formData.last_name} editing={true} onChange={handleInputChange('last_name')} />
-            <ProfileField label="Username" value={formData.username} editing={true} onChange={handleInputChange('username')} />
-            <ProfileField label="Email" value={formData.email} editing={true} onChange={handleInputChange('email')} inputType="email" />
-            <ProfileField label="Role" value={profile.role} editing={false} />
-            <div className="flex justify-end p-3">
-                <button type="button" onClick={onCancel} className="btn mr-2">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Changes</button>
-            </div>
-        </form>
-    );
-};
-
-// UserInfo Component
-const UserInfo: React.FC<UserInfoProps> = ({ profile, onEdit }) => (
-    <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
-        <img src={profile.profileURL} alt="Profile" />
-        <ProfileField label="First Name" value={profile.first_name} editing={false} />
-        <ProfileField label="Last Name" value={profile.last_name} editing={false} />
-        <ProfileField label="Username" value={profile.username} editing={false} />
-        <ProfileField label="Email" value={profile.email} editing={false} />
-        <ProfileField label="Role" value={profile.role} editing={false} />
-        <ProfileField label="Profile Picture" value={profile.profileURL} editing={false} />
-        <div className="flex justify-end p-3">
-            <button onClick={onEdit} className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                Edit
-            </button>
-        </div>
-    </div>
-);
 
 // ProfilePage Component
 const ProfilePage: React.FC = () => {
@@ -223,7 +99,10 @@ const ProfilePage: React.FC = () => {
             {profile && (editing ? (
                 <EditProfileForm profile={profile} onCancel={() => setEditing(false)} onSave={handleSave} />
             ) : (
-                <UserInfo profile={profile} onEdit={() => setEditing(true)} />
+                <div>
+                    <UserInfo profile={profile} onEdit={() => setEditing(true)} />
+                    <ReviewList reviewIds={profile.reviews} />
+                </div>
             ))}
         </div>
     );
