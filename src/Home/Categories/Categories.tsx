@@ -146,7 +146,7 @@ function Categories() {
                 </InputGroup>
             </div>
             <div className="container">
-                <p className="text-2xl font-bold">Here are your Posts</p>
+                <p className="text-2xl font-bold">Posts</p>
                 
                 {!loading ? (
                     <div className="overflow-x-auto">
