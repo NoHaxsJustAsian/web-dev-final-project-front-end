@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import supabase from "../supabaseClient";
+import { UserResponse } from '@supabase/supabase-js';
 import axios from 'axios';
+// import ProfilePage from '../Profile/Profile';
 import './Details.css';
 
 type PostData = {
@@ -11,7 +13,7 @@ type PostData = {
     description: string;
     user_id: number;
     price: string;
-    image_url: string;
+    img_url: string;
     created_by: string; 
 };
 
@@ -24,15 +26,19 @@ type ReviewData = {
 };
 
 type UserData = {
-    id: number;
-    email: string;
-    username: string;
-    profileURL: string;
-    role: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  username: string;
+  role: string;
+  liked_posts: string[];
+  selling_posts: string[];
+  profileURL: string;
 }
 
 function Details() {
-    const [userRole, setUserRole] = useState("seller");
+    const [user, setUser] = useState<UserResponse | null>(null);
+    const [userRole, setUserRole] = useState("");
     const { postId } = useParams<{ postId: string }>();
     const { userName } = useParams();
     const [post, setPost] = useState<PostData | null>(null);
@@ -44,20 +50,32 @@ function Details() {
     const [editPostData, setEditPostData] = useState<PostData | null>(null);
     const [quantity, setQuantity] = useState(1);
 
-    const incrementQuantity = () => {
-        setQuantity(prevQuantity => prevQuantity + 1);
+
+    useEffect(() => {
+      const fetchUser = async () => {
+          try {
+              await supabase.auth.getUser()
+                  .then(currentUser => {
+                      setUser(currentUser);
+  
+                      if (!currentUser) {
+                          navigate('/login');
+                      }
+                  });
+          } catch (error) {
+              console.error('Error fetching user:', error);
+          }   
       };
-      
-      const decrementQuantity = () => {
-        setQuantity(prevQuantity => (prevQuantity > 1 ? prevQuantity - 1 : 1));
-      };
+      fetchUser();
+  }, [navigate]);
 
    
+      
     useEffect(() => {
         const fetchDetails = async () => {
             try {
                 setLoading(true);
-                // Fetching product details
+
                 const { data: postData, error: postError } = await supabase
                     .from('posts')
                     .select('*')
@@ -67,47 +85,35 @@ function Details() {
                 if (postError) throw new Error(postError.message);
                 console.log('Post data:', postData);
                 setPost(postData);
-                
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('username', userName)
-                    .single();
-                    if (userData) {
-                        setUserRole(userData.role);
-                    } else {
-                        setUserRole('unknown');
-                    }
-                // Fetching reviews related to the product
+
                 const { data: reviewData, error: reviewError } = await supabase
                     .from('reviews')
                     .select('*')
                     .eq('id', postId);
     
                     if (reviewError) throw new Error(reviewError.message);
-                    setReviews(reviewData);  // Now correctly expects an array
+                    setReviews(reviewData);  
                     console.log("Reviews:", reviewData);
-
-                    
                     console.log('Image URL:', postData?.image_url);
-                    const { data: { user } } = await supabase.auth.getUser()
-                    if (user) {
-                        const { data: userData, error: userError } = await supabase
-                            .from('users')
-                            .select('role')
-                            .eq('username', user.id)  //username throws an error 
-                            .single();
-        
-                        if (userError || !userData) {
-                            console.error('Failed to fetch user data:', userError);
-                            setUserRole('unknown'); // Use 'unknown' if user data fetch fails
-                        } else {
-                            setUserRole(userData.role); // Set user role from fetched data
-                        }
-                    } else {
-                        setUserRole('unknown'); // Set role to 'unknown' if no user is logged in
-                    }
-
+                const { data: { user }, error } = await supabase.auth.getUser();
+                  if (error) {
+                      throw error;
+                  }
+      
+                  if (user) {
+                      const { data: userData, error } = await supabase
+                          .from('users')
+                          .select('*')
+                          .eq('id', user.id)
+                          .single();
+      
+                      if (error) {
+                          throw error;
+                      }
+      
+                      setUserRole(userData.role);
+                  }   
+                  
                 } catch (err) {
                     console.error('Error fetching profile:', error);
                 } finally {
@@ -129,7 +135,6 @@ function Details() {
 
       const saveChanges = async () => {
         if (!editPostData) return;
-    
         try {
           const { data, error } = await supabase
             .from('posts')
@@ -155,9 +160,8 @@ function Details() {
               .from('posts')
               .delete()
               .eq('id', postId);
-            
+
             if (error) throw error;
-      
             console.log('Post deleted:', data);
             navigate('/dashboard'); 
           } catch (error) {
@@ -169,29 +173,37 @@ function Details() {
       };
 
       
-        const renderBuyerActions = () => {
-          return (
-            <div className="flex flex-col items-end space-y-4">
-              <div className="flex items-center gap-1">
-                <button type="button" className="text-gray-600 transition hover:opacity-75" onClick={decrementQuantity}>
-                  &minus;
-                </button>
-                <input
-                  type="number"
-                  id="Quantity"
-                  value={quantity}
-                  onChange={e => setQuantity(parseInt(e.target.value))}
-                  className="h-10 w-24 rounded border-gray-200 text-center sm:text-sm"
-                  min="1"
-                />
-                <button type="button" className="text-gray-600 transition hover:opacity-75" onClick={incrementQuantity}>
-                  +
-                </button>
-              </div>
-              <button className={commonButtonStyle}onClick={addToCart}>Add to Cart</button>
+      const incrementQuantity = () => {
+        setQuantity(prevQuantity => prevQuantity + 1);
+      };
+    const decrementQuantity = () => {
+      setQuantity(prevQuantity => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+    };
+   
+      const renderBuyerActions = () => {
+        return (
+          <div className="flex flex-col items-start space-y-4">
+            <div className="flex items-center gap-1">
+              <button type="button" className="text-gray-600 transition hover:opacity-75" onClick={decrementQuantity}>
+                &minus;
+              </button>
+              <input
+                type="number"
+                id="Quantity"
+                value={quantity}
+                onChange={e => setQuantity(parseInt(e.target.value))}
+                className="h-10 w-24 rounded border-gray-200 text-center sm:text-sm"
+                min="1"
+              />
+              <button type="button" className="text-gray-600 transition hover:opacity-75" onClick={incrementQuantity}>
+                +
+              </button>
             </div>
-          );
-        };
+            <button className={commonButtonStyle} onClick={addToCart}>Add to Cart</button>
+          </div>
+        );
+      };
+      
       const renderSellerActions = () => {
         return isEditing ? (
           <div>
@@ -284,6 +296,7 @@ function Details() {
           navigate('/login');
           return;
         }
+        alert('Added to cart: ' + quantity); 
         console.log('Added to cart:', quantity);
       };
 
@@ -306,12 +319,12 @@ function Details() {
                         </p>
                         <div className="shrink-0">
                             <img
-                                className="h-64 w-64 object-cover rounded-md transition duration-300 ease-in-out transform group-hover:scale-110"
-                                src={post.image_url}
+                              
+                                src={post.img_url}
                                 alt={post.title}
                             />
                         </div>
-                        {renderActions()}
+                      
                         <p className="mt-2 text-left text-gray-900">
                             {post ? `₹${parseFloat(post.price).toFixed(2)}` : 'Price'}
                         </p>
@@ -321,6 +334,7 @@ function Details() {
                         <p className="text-left text-sm text-gray-600">
                             Seller: {post ? post.created_by : 'Seller'}
                         </p>
+                        {renderActions()}
                         <div className="mt-4 flex justify-end items-end space-x-2">
                         </div>
                         <button onClick={goBackToDashboard} className={commonButtonStyle}>
@@ -328,8 +342,6 @@ function Details() {
                         </button>
                     </div>
                 </div>
-    
-    
                 <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
                     {reviews ? reviews.map(review => (
                         <blockquote key={review.id} className="flex h-full flex-col justify-between rounded-lg border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
@@ -356,204 +368,3 @@ function Details() {
 }
 
 export default Details;
-
-// function Details() {
-//     const { postId } = useParams<{ postId: string }>();
-//     const [post, setPost] = useState<PostData[]>([]);
-
-//     const [reviews, setReviews] = useState<any[]>([]);
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState("");
-//     const [quantity, setQuantity] = useState(1);
-//     const navigate = useNavigate();
-//     const [price, setPrice] = useState("");
-//     const [productName, setProductName] = useState("");
-//     const [description, setDescription] = useState("");
-//     const [detailsMode, setDetailsMode] = useState('view');
-
-//     const handleLoginClick = () => {
-//         navigate('/login');
-//     };
-//     const handleHomeClick = () => {
-//         navigate('/home');
-//     };
-//     const handleProfileClick = () => {
-//         navigate('/profile');
-//     };
-
-//     const handleCreateClick = () => {
-//         setDetailsMode('create');
-//     };
-
-//     const ProductDetails = ({ postId }: { postId: string }) => {
-//         const [postInfo, setPostInfo] = useState(null);
-//         const [loading, setLoading] = useState(false);
-//         const [error, setError] = useState(null);
-    
-//         useEffect(() => {
-//             const fetchPostDetails = async () => {
-//                 setLoading(true);
-//                 console.log("Fetching details for postId:", postId);
-    
-//                 try {
-//                     const postIdNumber = Number(postId);
-//                     if (isNaN(postIdNumber)) {
-//                         throw new Error("Invalid post ID format");
-//                     }
-    
-//                     const { data, error, status } = await supabase
-//                         .from('products')
-//                         .select('*')
-//                         .eq('id', postIdNumber);
-    
-//                     if (data) {
-//                         setPostInfo(data[0]); // Assuming the query returns at least one result
-//                     } else {
-//                         setError(null);
-//                     }
-//                 } catch (error) {
-//                     console.error('Error fetching post details:', error);
-//                     console.error("No user found");
-//                 } finally {
-//                     setLoading(false);
-//                 }
-//             };
-    
-//             if (postId) {
-//                 fetchPostDetails();
-//             }
-//         }, [postId]);
-//         return (
-//             <div className="product-details-container">
-//                 <div>Created at: {postInfo?.created_at}</div>
-//                 <div>Description: {postInfo.description}</div>
-//                 <div>ID: {postInfo.id}</div>
-//                 <div>Name: {postInfo.name}</div>
-//                 <div>Price: {postInfo.price}</div>
-//             </div>
-//         );
-//     };
-//     if (loading) return <div>Loading...</div>;
-//     if (error) return <div>Error: {error}</div>;
-//     if (!post) return <div>Post not found.</div>;
-  
-
-
-
-   
-//     const changeFormMode = (mode: string) => {
-//         setDetailsMode(mode);
-//     };
-
-    // const renderModeButtons = () => {
-    //     if (userRole === 'seller') {
-    //         return (
-    //             <>
-    //                 <button onClick={() => setDetailsMode('create')}>Create Mode</button>
-    //                 <button onClick={() => setDetailsMode('view')}>View Mode</button>
-    //                 <button onClick={() => setDetailsMode('edit')}>Edit Mode</button>
-    //                 <button onClick={() => setDetailsMode('delete')}>Delete Mode</button>
-    //             </>
-    //         );
-    //     } else if (userRole === 'buyer') {
-    //         return (
-    //             <button onClick={() => setDetailsMode('view')}>View Mode</button>
-    //         );
-    //     }
-    // };
-
-
-//     const Header = ({ userRole, changeFormMode }: { userRole: string, changeFormMode: (mode: string) => void }) => {
-//         return (
-//             <div className="header">
-//                 <nav className="menu">
-//                     {/* ... other menu items ... */}
-
-//                     <button onClick={handleLoginClick}>
-//                         Home
-//                     </button>
-//                     <button onClick={handleLoginClick}>
-//                         Search
-//                     </button>
-//                     <button onClick={handleProfileClick}>
-//                         Profile
-//                     </button>
-//                     <button className="login-button" onClick={handleLoginClick}>
-//                         Login
-//                     </button>
-
-//                     {userRole === 'seller' && (
-//                         <button className="create-button" onClick={() => changeFormMode('create')}>Create</button>
-//                     )}
-//                 </nav>
-//             </div>
-//         );
-//     };
-//     const ProductScreen = ({ userRole, changeFormMode }: { userRole: string, changeFormMode: (mode: string) => void }) => {
-//         return (
-//             <>
-//                 <div className="product-section">
-//                     <div className="image-container">
-//                         {/* Image will go here */}
-//                     </div>
-
-//                     <div className="product-details">
-//                     <div>Created at: {postInfo.created_at}</div>
-//                     <div>Description: {postInfo.description}</div>
-//                     <div>ID: {postInfo.id}</div>
-//                     <div>Name: {postInfo.name}</div>
-//                     <div>Price: {postInfo.price}</div>
-//                         {userRole === 'seller' && (
-//                             <>
-//                                 <button className="edit-button" onClick={handleEditClick}>
-//                                     Edit
-//                                 </button>
-//                                 {/* logic needs fix */}
-//                                 <button className="delete-button" onClick={() => changeFormMode('delete')}>
-//                                     Delete
-//                                 </button>
-//                             </>
-//                         )}
-//                     </div>
-//                 </div>
-
-//             </>
-//         );
-//     };
-
-
-  
-
-
-
-//     const incrementQuantity = () => {
-//         setQuantity((prevQuantity) => prevQuantity + 1);
-//     };
-
-//     const decrementQuantity = () => {
-//         setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
-//     };
-
-//     if (loading) return <div>Loading...</div>;
-//     if (error) return <div>Error: {error}</div>;
-//     return (
-//         <div className="container">
-//             {Header({ userRole, changeFormMode })}
-//             <div className="product-details">
-//                 {ProductScreen({ userRole, changeFormMode })}
-
-//                 <div className="quantity-selector">
-//                     <button onClick={decrementQuantity}>-</button>
-//                     <span>{quantity}</span>
-//                     <button onClick={incrementQuantity}>+</button>
-//                 </div>
-//                 <button className="button">Add to Cart</button>
-//             </div>
-//             <footer className="footer">
-//                 Additional Reviews
-//             </footer>
-//         </div>
-//     );
-// }
-
-// export default Details;
