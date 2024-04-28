@@ -123,10 +123,10 @@ const CreateProduct = () => {
     }
 
     const { data: userProfile, error: profileError } = await supabase
-      .from('users')
-      .select('seller_posts')
-      .eq('id', userId)
-      .single();
+        .from('users')
+        .select('seller_posts')
+        .eq('id', userId)
+        .single();
 
     if (profileError || !userProfile) {
       console.error('Error fetching user profile:', profileError);
@@ -136,18 +136,18 @@ const CreateProduct = () => {
       console.error('Error fetching product data:', productError);
       return;
     }
-    const updatedSellingPosts = [...userProfile.seller_posts, (productData as any)[0].id];
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({ selling_posts: updatedSellingPosts })
-      .match({ id: userId });
+    // const updatedSellingPosts = [...(userProfile.seller_posts || []), (productData as any)[0].id];
+    // const { error: updateError } = await supabase
+    //   .from('users')
+    //   .update({ selling_posts: updatedSellingPosts })
+    //   .match({ id: userId });
 
-    if (updateError) {
-      console.error('Error updating selling posts:', updateError);
-    } else {
+    // if (updateError) {
+    //   console.error('Error updating selling posts:', updateError);
+    // } else {
       alert('Product created and profile updated successfully!');
       navigate('/');
-    }
+    // }
   };
 
 
